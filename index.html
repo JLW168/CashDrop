@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +64,7 @@
             appId: "1:873891130920:web:b6b8f0432943c33a930f1d",
             measurementId: "G-LVLMJ8ZY0B"
         };
+        const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/23884137/uuoijzq/';
         const DEFAULT_EXCHANGE_RATE = 4000;
         const REPORTS_PER_PAGE = 25;
 
@@ -565,17 +567,54 @@
 
             const handleConfirmSubmit = useCallback(async () => {
                 setIsSubmitting(true);
+                const clean = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
+                const reportData = {
+                    ...formData,
+                    cashUsd: clean(formData.cashUsd), cashKhr: clean(formData.cashKhr),
+                    bankUsd: clean(formData.bankUsd), bankKhr: clean(formData.bankKhr),
+                    grandTotalKhr: grandTotal,
+                    createdAt: window.firebase.Timestamp.fromDate(new Date()),
+                    submittedBy: userData.uid
+                };
+
                 try {
-                    const clean = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
-                    await window.firebase.addDoc(window.firebase.collection(db, "cashDrops"), {
-                        ...formData,
-                        cashUsd: clean(formData.cashUsd), cashKhr: clean(formData.cashKhr),
-                        bankUsd: clean(formData.bankUsd), bankKhr: clean(formData.bankKhr),
-                        grandTotalKhr: grandTotal,
-                        createdAt: window.firebase.Timestamp.fromDate(new Date()),
-                        submittedBy: userData.uid
-                    });
+                    // 1. Save to Firebase
+                    await window.firebase.addDoc(window.firebase.collection(db, "cashDrops"), reportData);
+                    
+                    // 2. Send to Zapier with formatted currency
+                    const zapierPayload = {
+                        report: {
+                            date: reportData.date,
+                            shop: reportData.shop,
+                            staff: reportData.staff,
+                            shift: reportData.shift,
+                            cashUsd: formatCurrency(reportData.cashUsd, 'USD'),
+                            cashKhr: formatCurrency(reportData.cashKhr, 'KHR'),
+                            bankUsd: formatCurrency(reportData.bankUsd, 'USD'),
+                            bankKhr: formatCurrency(reportData.bankKhr, 'KHR'),
+                            note: reportData.note,
+                            grandTotalKhr: formatCurrency(reportData.grandTotalKhr, 'KHR'),
+                            submittedByName: userData.name,
+                            submittedAt: new Date().toISOString()
+                        }
+                    };
+
+                    try {
+                        await fetch(ZAPIER_WEBHOOK_URL, {
+                            method: 'POST',
+                            mode: 'no-cors', // To prevent CORS errors
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(zapierPayload),
+                        });
+                    } catch (zapierError) {
+                        console.error('Error sending data to Zapier:', zapierError);
+                    }
+
+                    // 3. Reset form
                     setFormData(getInitialState());
+
                 } catch (error) {
                     console.error("Error submitting cash drop:", error);
                 } finally {
