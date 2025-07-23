@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,6 +37,9 @@
     <!-- SheetJS (for Excel export) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 
+    <!-- Chart.js for data visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+
     <style>
         body {
             background-color: #f1f5f9; /* slate-100 */
@@ -64,7 +66,6 @@
             appId: "1:873891130920:web:b6b8f0432943c33a930f1d",
             measurementId: "G-LVLMJ8ZY0B"
         };
-        const ZAPIER_WEBHOOK_URL = 'https://hooks.zapier.com/hooks/catch/23884137/uuoijzq/';
         const DEFAULT_EXCHANGE_RATE = 4000;
         const REPORTS_PER_PAGE = 25;
 
@@ -276,7 +277,7 @@
         const SubmitConfirmationModal = ({ onConfirm, onClose, isSubmitting }) => (
             <Modal isOpen={true} onClose={onClose}>
                 <div className="p-6">
-                    <h3 className="text-lg font-bold text-gray-900">បញ្ជាក់ការបញ្ជូនរបាយការណ៍</h3>
+                    <h3 className="text-lg font-bold text-gray-900">បញ្ជាក់การបញ្ជូនរបាយការណ៍</h3>
                     <p className="mt-2 text-sm text-gray-600">សូមពិនិត្យមើលព័ត៌មានលម្អិតមុនពេលបញ្ជូន ត្រឹមត្រូវហើយ?</p>
                 </div>
                 <div className="bg-gray-50 px-6 py-3 flex justify-end items-center gap-3">
@@ -567,54 +568,45 @@
 
             const handleConfirmSubmit = useCallback(async () => {
                 setIsSubmitting(true);
-                const clean = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
-                const reportData = {
-                    ...formData,
-                    cashUsd: clean(formData.cashUsd), cashKhr: clean(formData.cashKhr),
-                    bankUsd: clean(formData.bankUsd), bankKhr: clean(formData.bankKhr),
-                    grandTotalKhr: grandTotal,
-                    createdAt: window.firebase.Timestamp.fromDate(new Date()),
-                    submittedBy: userData.uid
-                };
-
                 try {
-                    // 1. Save to Firebase
-                    await window.firebase.addDoc(window.firebase.collection(db, "cashDrops"), reportData);
+                    const clean = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
+                    await window.firebase.addDoc(window.firebase.collection(db, "cashDrops"), {
+                        ...formData,
+                        cashUsd: clean(formData.cashUsd), cashKhr: clean(formData.cashKhr),
+                        bankUsd: clean(formData.bankUsd), bankKhr: clean(formData.bankKhr),
+                        grandTotalKhr: grandTotal,
+                        createdAt: window.firebase.Timestamp.fromDate(new Date()),
+                        submittedBy: userData.uid
+                    });
                     
-                    // 2. Send to Zapier with formatted currency
-                    const zapierPayload = {
-                        report: {
-                            date: reportData.date,
-                            shop: reportData.shop,
-                            staff: reportData.staff,
-                            shift: reportData.shift,
-                            cashUsd: formatCurrency(reportData.cashUsd, 'USD'),
-                            cashKhr: formatCurrency(reportData.cashKhr, 'KHR'),
-                            bankUsd: formatCurrency(reportData.bankUsd, 'USD'),
-                            bankKhr: formatCurrency(reportData.bankKhr, 'KHR'),
-                            note: reportData.note,
-                            grandTotalKhr: formatCurrency(reportData.grandTotalKhr, 'KHR'),
-                            submittedByName: userData.name,
-                            submittedAt: new Date().toISOString()
-                        }
-                    };
-
+                    // **** SEND NOTIFICATION TO MAKE.COM ****
                     try {
-                        await fetch(ZAPIER_WEBHOOK_URL, {
+                        const webhookUrl = 'https://hook.eu2.make.com/zdwmgoi1rnj2n5u1c74uzw93zhx4mvxe';
+                        
+                        const currentDateTime = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh' });
+
+                        await fetch(webhookUrl, {
                             method: 'POST',
-                            mode: 'no-cors', // To prevent CORS errors
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify(zapierPayload),
+                            body: JSON.stringify({
+                                dateTime: currentDateTime,
+                                shop: formData.shop,
+                                staff: formData.staff,
+                                cashUsd: formatCurrency(formData.cashUsd, 'USD'),
+                                cashKhr: formatCurrency(formData.cashKhr, 'KHR'),
+                                bankUsd: formatCurrency(formData.bankUsd, 'USD'),
+                                bankKhr: formatCurrency(formData.bankKhr, 'KHR'),
+                                total: formatCurrency(grandTotal, 'KHR'),
+                                note: formData.note
+                            })
                         });
-                    } catch (zapierError) {
-                        console.error('Error sending data to Zapier:', zapierError);
+                    } catch (error) {
+                        console.error("Failed to send notification:", error);
                     }
-
-                    // 3. Reset form
+                    
                     setFormData(getInitialState());
-
                 } catch (error) {
                     console.error("Error submitting cash drop:", error);
                 } finally {
@@ -676,6 +668,65 @@
         /******************************************************************************
          * REPORTS DASHBOARD & SUB-COMPONENTS
          *****************************************************************************/
+        const ReportsChart = ({ data }) => {
+            const chartRef = useRef(null);
+            const chartInstance = useRef(null);
+
+            useEffect(() => {
+                if (!chartRef.current || !data || !window.Chart) return;
+
+                const chartData = data.reduce((acc, report) => {
+                    const shop = report.shop;
+                    if (!acc[shop]) {
+                        acc[shop] = 0;
+                    }
+                    acc[shop] += report.grandTotalKhr || 0;
+                    return acc;
+                }, {});
+
+                const labels = Object.keys(chartData);
+                const values = Object.values(chartData);
+
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
+
+                const ctx = chartRef.current.getContext('2d');
+                chartInstance.current = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Total KHR by Shop',
+                            data: values,
+                            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+
+            }, [data]);
+
+            return (
+                <div className="mb-8 p-4 bg-white rounded-xl shadow-lg">
+                    <h3 className="text-lg font-bold text-slate-800 mb-4">Shop Performance</h3>
+                    <div className="relative h-64">
+                        <canvas ref={chartRef}></canvas>
+                    </div>
+                </div>
+            );
+        };
+
         const ReportsDashboard = () => {
             const { reports, shops, appSettings, loadMoreReports, hasMore, isFetchingMore } = useAppContext();
             const { db } = useAuth();
@@ -882,6 +933,9 @@
                             <Icon name="export" /> Export to Excel
                         </button>
                     </div>
+                    
+                    {filteredAndAggregatedData && <ReportsChart data={filteredAndAggregatedData.data} />}
+                    
                     <ReportFilters 
                         filters={filters} 
                         setFilters={setFilters} 
