@@ -468,7 +468,7 @@
         function CheckInMePage({ db, auth, userPermissions, shops }) {
             const [time, setTime] = useState(new Date());
             const [checkInStatus, setCheckInStatus] = useState(null);
-            const [todayRecordId, setTodayRecordId] = useState(null);
+            const [todayRecord, setTodayRecord] = useState(null);
             const [selectedShop, setSelectedShop] = useState(userPermissions.shops?.[0] || '');
             const [isProcessing, setIsProcessing] = useState(false);
             const [message, setMessage] = useState('');
@@ -489,9 +489,10 @@
                     );
                     const querySnapshot = await getDocs(q);
                     if (!querySnapshot.empty) {
-                        const record = querySnapshot.docs[0].data();
-                        setCheckInStatus(record.status);
-                        setTodayRecordId(querySnapshot.docs[0].id);
+                        const recordDoc = querySnapshot.docs[0];
+                        const recordData = recordDoc.data();
+                        setTodayRecord({ id: recordDoc.id, ...recordData });
+                        setCheckInStatus(recordData.status);
                     }
                 };
                 checkExistingRecord();
@@ -538,7 +539,7 @@
                     try {
                         if (type === 'Check In') {
                             const { addDoc, collection, serverTimestamp } = window.firebaseSDK;
-                            await addDoc(collection(db, "attendanceRecords"), {
+                            const newRecordRef = await addDoc(collection(db, "attendanceRecords"), {
                                 userId: auth.currentUser.uid,
                                 shopId: selectedShop,
                                 checkInTime: serverTimestamp(),
@@ -546,10 +547,27 @@
                                 status: 'checked-in'
                             });
                             setCheckInStatus('checked-in');
+                            setTodayRecord({ id: newRecordRef.id, checkInTime: new Date(), status: 'checked-in' });
                             setMessage('Checked in successfully!');
                         } else {
+                            if (!todayRecord || !todayRecord.checkInTime) {
+                                setMessage("Error: Cannot find check-in record.");
+                                setIsProcessing(false);
+                                return;
+                            }
+
+                            const checkInTime = todayRecord.checkInTime.toDate();
+                            const now = new Date();
+                            const diffInMinutes = (now.getTime() - checkInTime.getTime()) / 60000;
+                            
+                            if (diffInMinutes < 30) {
+                                setMessage(`You can check out after ${Math.ceil(30 - diffInMinutes)} more minute(s).`);
+                                setIsProcessing(false);
+                                return;
+                            }
+
                             const { doc, updateDoc, serverTimestamp } = window.firebaseSDK;
-                            await updateDoc(doc(db, "attendanceRecords", todayRecordId), {
+                            await updateDoc(doc(db, "attendanceRecords", todayRecord.id), {
                                 checkOutTime: serverTimestamp(),
                                 status: 'checked-out'
                             });
@@ -592,6 +610,40 @@
         }
 
         function AttendanceReportPage({ db }) {
+             const [activeTab, setActiveTab] = useState('dailyReport');
+
+            const TabButton = ({ tabName, title }) => (
+                <button
+                    onClick={() => setActiveTab(tabName)}
+                    className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 flex-grow text-center sm:flex-grow-0 ${
+                        activeTab === tabName ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                >
+                    {title}
+                </button>
+            );
+
+            return (
+                 <div className="py-6 sm:py-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <header>
+                            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Attendance Report</h1>
+                            <p className="text-slate-400 mt-1">Review attendance records.</p>
+                        </header>
+                        <div className="mt-6 flex flex-wrap gap-2 bg-slate-800/50 p-1 rounded-lg border border-slate-700">
+                            <TabButton tabName="dailyReport" title="Daily Report" />
+                            <TabButton tabName="workDayReport" title="No. Work Day" />
+                        </div>
+                        <div className="mt-6">
+                            {activeTab === 'dailyReport' && <DailyReportTab db={db} />}
+                            {activeTab === 'workDayReport' && <WorkDayReportTab db={db} />}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function DailyReportTab({ db }) {
             const [refreshKey, setRefreshKey] = useState(0);
             const { data: attendanceRecords } = useCollection(db, 'attendanceRecords', refreshKey);
             const { data: supervisors } = useCollection(db, 'supervisors', refreshKey);
@@ -614,38 +666,168 @@
             }, [attendanceRecords, supervisors, shops, leaveRequests]);
 
             return (
-                <div className="py-6 sm:py-10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                        <header className="mb-8">
-                            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Attendance Report</h1>
-                            <p className="text-slate-400 mt-1">Daily attendance records for all staff.</p>
-                        </header>
-                        <div className="bg-slate-800/50 shadow-lg rounded-lg border border-slate-700 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-700">
-                                    <thead className="bg-slate-900/50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Staff Name</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Shop Name</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Check In</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Check Out</th>
-                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">On Leave</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-slate-800/50 divide-y divide-slate-700">
-                                        {reportData.map(record => (
-                                            <tr key={record.id} className="hover:bg-slate-700/50">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200 font-medium">{record.staffName}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.shopName}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.checkInTime ? formatRequestTimestamp(record.checkInTime) : 'N/A'}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.checkOutTime ? formatRequestTimestamp(record.checkOutTime) : 'N/A'}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.onLeave}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                <div className="bg-slate-800/50 shadow-lg rounded-lg border border-slate-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-700">
+                            <thead className="bg-slate-900/50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Staff Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Shop Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Check In</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Check Out</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">On Leave</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-slate-800/50 divide-y divide-slate-700">
+                                {reportData.map(record => (
+                                    <tr key={record.id} className="hover:bg-slate-700/50">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200 font-medium">{record.staffName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.shopName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.checkInTime ? formatRequestTimestamp(record.checkInTime) : 'N/A'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.checkOutTime ? formatRequestTimestamp(record.checkOutTime) : 'N/A'}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.onLeave}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+
+        function WorkDayReportTab({ db }) {
+            const [filters, setFilters] = useState({ timeRange: 'this-month', shopId: '', staffId: '' });
+            const [refreshKey, setRefreshKey] = useState(0);
+
+            const { data: attendanceRecords } = useCollection(db, 'attendanceRecords', refreshKey);
+            const { data: supervisors } = useCollection(db, 'supervisors', refreshKey);
+            const { data: shops } = useCollection(db, 'shops', refreshKey);
+
+            const handleFilterChange = (e) => {
+                const { name, value } = e.target;
+                setFilters(prev => ({ ...prev, [name]: value }));
+            };
+
+            const filteredData = useMemo(() => {
+                const now = new Date();
+                let startDate, endDate;
+
+                switch (filters.timeRange) {
+                    case 'this-week':
+                        startDate = new Date(now.setDate(now.getDate() - now.getDay()));
+                        endDate = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+                        break;
+                    case 'last-month':
+                        startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                        endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                        break;
+                    case 'this-year':
+                        startDate = new Date(now.getFullYear(), 0, 1);
+                        endDate = new Date(now.getFullYear(), 11, 31);
+                        break;
+                    case 'this-month':
+                    default:
+                        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                        break;
+                }
+                
+                startDate.setHours(0,0,0,0);
+                endDate.setHours(23,59,59,999);
+
+                return attendanceRecords.filter(record => {
+                    const recordDate = record.checkInTime.toDate();
+                    const shopMatch = !filters.shopId || record.shopId === filters.shopId;
+                    const staffMatch = !filters.staffId || record.userId === filters.staffId;
+                    return recordDate >= startDate && recordDate <= endDate && shopMatch && staffMatch;
+                });
+            }, [attendanceRecords, filters]);
+
+            const reportData = useMemo(() => {
+                const groupedData = filteredData.reduce((acc, record) => {
+                    const monthYear = record.checkInTime.toDate().toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' });
+                    const key = `${record.userId}-${monthYear}`;
+                    
+                    if (!acc[key]) {
+                        const supervisor = supervisors.find(s => s.uid === record.userId);
+                        const shop = shops.find(s => s.id === record.shopId);
+                        acc[key] = {
+                            dueTime: monthYear,
+                            staffName: supervisor ? supervisor.name : 'N/A',
+                            shopName: shop ? shop.name : 'N/A',
+                            workDays: 0,
+                            totalHours: 0
+                        };
+                    }
+                    
+                    acc[key].workDays += 1;
+                    if (record.checkInTime && record.checkOutTime) {
+                        const hours = (record.checkOutTime.toDate() - record.checkInTime.toDate()) / 3600000;
+                        acc[key].totalHours += hours;
+                    }
+
+                    return acc;
+                }, {});
+
+                return Object.values(groupedData);
+            }, [filteredData, supervisors, shops]);
+
+            const totals = useMemo(() => {
+                return reportData.reduce((acc, row) => {
+                    acc.workDays += row.workDays;
+                    acc.totalHours += row.totalHours;
+                    return acc;
+                }, { workDays: 0, totalHours: 0 });
+            }, [reportData]);
+
+            return (
+                <div className="bg-slate-800/50 shadow-lg rounded-lg border border-slate-700 overflow-hidden">
+                    <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                         <select name="timeRange" value={filters.timeRange} onChange={handleFilterChange} className="input">
+                            <option value="this-week">This Week</option>
+                            <option value="this-month">This Month</option>
+                            <option value="last-month">Last Month</option>
+                            <option value="this-year">This Year</option>
+                        </select>
+                        <select name="shopId" value={filters.shopId} onChange={handleFilterChange} className="input">
+                            <option value="">All Shops</option>
+                            {shops.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                        </select>
+                        <select name="staffId" value={filters.staffId} onChange={handleFilterChange} className="input">
+                            <option value="">All Staff</option>
+                            {supervisors.map(s => <option key={s.uid} value={s.uid}>{s.name}</option>)}
+                        </select>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-700">
+                            <thead className="bg-slate-900/50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Due Time (MM-YY)</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Staff Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Shop Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">No. Work Day</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Total Hour</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-slate-800/50 divide-y divide-slate-700">
+                                {reportData.map((row, index) => (
+                                    <tr key={index} className="hover:bg-slate-700/50">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{row.dueTime}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200 font-medium">{row.staffName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{row.shopName}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{row.workDays}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{row.totalHours.toFixed(2)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                             <tfoot className="bg-slate-900/50">
+                                <tr>
+                                    <td colSpan="3" className="px-6 py-3 text-right text-sm font-semibold text-slate-300 uppercase">Sub Total</td>
+                                    <td className="px-6 py-3 text-left text-sm font-semibold text-slate-200">{totals.workDays}</td>
+                                    <td className="px-6 py-3 text-left text-sm font-semibold text-slate-200">{totals.totalHours.toFixed(2)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             );
