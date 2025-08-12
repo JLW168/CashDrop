@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://rsms.me/inter/inter.css');
+        html { font-family: 'Inter', sans-serif; }
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background-color: #1f293b; /* bg-slate-800 */
+            color: #d1d5db; /* text-gray-300 */
+            padding: 2rem;
+            border-radius: 0.5rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #334155; /* border-slate-700 */
+        }
+        .input {
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border-width: 1px;
+            border-color: #475569; /* border-slate-600 */
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+            background-color: #334155; /* bg-slate-700 */
+            color: #f1f5f9; /* text-slate-100 */
+        }
+        .input:focus {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+            --tw-ring-color: #2563eb; /* ring-blue-600 */
+            border-color: #2563eb; /* border-blue-600 */
+        }
+        /* Fix for date input styling */
+        input[type="date"].input {
+            text-align: center;
+        }
+        input[type="date"].input:not(:valid) {
+          color: #94a3b8; /* text-slate-400 for placeholder effect */
+        }
+        .checkbox-group {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #475569;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            margin-top: 0.25rem;
+            background-color: #334155;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-300">
+    <div id="root"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, onSnapshot, doc, addDoc, updateDoc, deleteDoc, setLogLevel, getDocs, serverTimestamp, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.firebaseSDK = {
+            initializeApp,
+            getAuth,
+            onAuthStateChanged,
+            signInWithEmailAndPassword,
+            signOut,
+            getFirestore,
+            collection,
+            onSnapshot,
+            doc,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            setLogLevel,
+            getDocs,
+            serverTimestamp,
+            query,
+            where,
+        };
+    </script>
+    
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        // --- PASTE YOUR FIREBASE CONFIGURATION HERE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBNb5ZI9XIWWSpxGD-FeV94K5FMc2a8udU",
+            authDomain: "hr-manager-84ada.firebaseapp.com",
+            projectId: "hr-manager-84ada",
+            storageBucket: "hr-manager-84ada.firebasestorage.app",
+            messagingSenderId: "365563456537",
+            appId: "1:365563456537:web:9c5a6fbce7710b4c72ce88",
+            measurementId: "G-51R9KT7LC1"
+        };
+        // ---------------------------------------------
+
+        // --- CENTRALIZED PAGE CONFIGURATION ---
+        const PAGES = {
+            checkInMe: {
+                id: 'checkInMe',
+                title: 'CheckInMe',
+                icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>,
+            },
+            attendanceReport: {
+                id: 'attendanceReport',
+                title: 'Attendance Report',
+                icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>,
+            },
+            leaveRequests: {
+                id: 'leaveRequests',
+                title: 'Leave Requests',
+                icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>,
+            },
+            settings: {
+                id: 'settings',
+                title: 'Settings',
+                icon: <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
+            }
+        };
+
+        // --- HELPER FUNCTIONS ---
+        const formatDate = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const year = date.getUTCFullYear();
+            return `${day}-${month}-${year}`;
+        };
+
+        const formatRequestTimestamp = (timestamp) => {
+            if (!timestamp) return 'N/A';
+            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+            
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+
+            let hours = date.getHours();
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            const strHours = String(hours).padStart(2, '0');
+
+            return `${day}-${month}-${year} | ${strHours}:${minutes} ${ampm}`;
+        };
+
+
+        function showConfirmation(message) {
+            return new Promise((resolve) => {
+                const confirmationBox = document.createElement('div');
+                confirmationBox.className = 'modal-overlay';
+                confirmationBox.innerHTML = `
+                    <div class="modal-content text-center">
+                        <p class="mb-4">${message}</p>
+                        <div class="flex justify-center space-x-4">
+                            <button id="confirm-yes" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">Confirm</button>
+                            <button id="confirm-no" class="bg-slate-600 text-slate-200 px-4 py-2 border border-slate-500 rounded-md shadow-sm hover:bg-slate-500">Cancel</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(confirmationBox);
+
+                document.getElementById('confirm-yes').onclick = () => {
+                    document.body.removeChild(confirmationBox);
+                    resolve(true);
+                };
+
+                document.getElementById('confirm-no').onclick = () => {
+                    document.body.removeChild(confirmationBox);
+                    resolve(false);
+                };
+            });
+        }
+
+        // --- CUSTOM HOOK FOR DATA FETCHING (ENHANCED) ---
+        const useCollection = (db, collectionName, refreshKey) => {
+            const [data, setData] = useState([]);
+            const [loading, setLoading] = useState(true);
+            const [lastUpdate, setLastUpdate] = useState(null);
+
+            useEffect(() => {
+                if (!db) {
+                    setLoading(false);
+                    return;
+                };
+                
+                setLoading(true); // Set loading to true on each refresh
+                const { collection, onSnapshot, query } = window.firebaseSDK;
+                const q = query(collection(db, collectionName));
+                const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                    const items = [];
+                    querySnapshot.forEach((doc) => {
+                        items.push({ id: doc.id, ...doc.data() });
+                    });
+                    setData(items);
+                    setLastUpdate(new Date()); // Always update the timestamp on new data
+                    setLoading(false);
+                }, (error) => {
+                    console.error(`Error fetching ${collectionName}:`, error);
+                    setLoading(false);
+                });
+
+                return () => unsubscribe();
+            }, [db, collectionName, refreshKey]);
+
+            return { data, loading, lastUpdate };
+        };
+
+        // --- AUTHENTICATION COMPONENT (REDESIGNED) ---
+        function LoginPage({ auth }) {
+            const [email, setEmail] = useState('');
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [loading, setLoading] = useState(false);
+            const [showPassword, setShowPassword] = useState(false);
+            const { signInWithEmailAndPassword } = window.firebaseSDK;
+
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+                try {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } catch (err) {
+                    setError("Invalid email or password.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-900 flex">
+                    <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
+                        <div className="mx-auto w-full max-w-sm lg:w-96">
+                            <div>
+                                <h2 className="mt-6 text-3xl font-extrabold text-slate-100">Sign in to your account</h2>
+                                <p className="mt-2 text-sm text-slate-400">
+                                    Welcome to the Attendance Record System
+                                </p>
+                            </div>
+
+                            <div className="mt-8">
+                                <div className="mt-6">
+                                    <form onSubmit={handleLogin} className="space-y-6">
+                                        <div>
+                                            <label htmlFor="email" className="block text-sm font-medium text-slate-300">
+                                                Email address
+                                            </label>
+                                            <div className="mt-1">
+                                                <input
+                                                    id="email"
+                                                    name="email"
+                                                    type="email"
+                                                    autoComplete="email"
+                                                    required
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
+                                                    className="appearance-none block w-full px-3 py-2 border border-slate-700 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-slate-800 text-white"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <label htmlFor="password"  className="block text-sm font-medium text-slate-300">
+                                                Password
+                                            </label>
+                                            <div className="mt-1 relative">
+                                                <input
+                                                    id="password"
+                                                    name="password"
+                                                    type={showPassword ? "text" : "password"}
+                                                    autoComplete="current-password"
+                                                    required
+                                                    value={password}
+                                                    onChange={(e) => setPassword(e.target.value)}
+                                                    className="appearance-none block w-full px-3 py-2 border border-slate-700 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-slate-800 text-white"
+                                                />
+                                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5">
+                                                    <svg onClick={() => setShowPassword(!showPassword)} className="h-6 w-6 text-slate-400 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={showPassword ? "M15 12a3 3 0 11-6 0 3 3 0 016 0z" : "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242"} />
+                                                        {showPassword && <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242" />}
+                                                    </svg>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+
+                                        <div>
+                                            <button
+                                                type="submit"
+                                                disabled={loading}
+                                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400"
+                                            >
+                                                {loading ? 'Signing in...' : 'Sign in'}
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="hidden lg:block relative w-0 flex-1">
+                        <img
+                            className="absolute inset-0 h-full w-full object-cover"
+                            src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1768&q=80"
+                            alt=""
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        // --- CORE APPLICATION ---
+        function App() {
+            const [db, setDb] = useState(null);
+            const [auth, setAuth] = useState(null);
+            const [currentUser, setCurrentUser] = useState(null);
+            const [userPermissions, setUserPermissions] = useState(null);
+            const [authLoading, setAuthLoading] = useState(true);
+
+            useEffect(() => {
+                const { initializeApp, getFirestore, getAuth, onAuthStateChanged, collection, query, where, getDocs } = window.firebaseSDK;
+                const app = initializeApp(firebaseConfig);
+                const firestore = getFirestore(app);
+                const authInstance = getAuth(app);
+                
+                setDb(firestore);
+                setAuth(authInstance);
+
+                onAuthStateChanged(authInstance, async (user) => {
+                    if (user) {
+                        setCurrentUser(user);
+                        const supervisorsRef = collection(firestore, "supervisors");
+                        const q = query(supervisorsRef, where("uid", "==", user.uid));
+                        const querySnapshot = await getDocs(q);
+                        if (!querySnapshot.empty) {
+                            setUserPermissions({ id: querySnapshot.docs[0].id, ...querySnapshot.docs[0].data() });
+                        } else {
+                            setUserPermissions(null);
+                        }
+                    } else {
+                        setCurrentUser(null);
+                        setUserPermissions(null);
+                    }
+                    setAuthLoading(false);
+                });
+            }, []);
+
+            if (authLoading) {
+                return <div className="flex justify-center items-center h-screen"><div className="text-xl font-semibold">Loading...</div></div>;
+            }
+
+            if (!currentUser || !userPermissions) {
+                return <LoginPage auth={auth} />;
+            }
+
+            return <MainApp db={db} auth={auth} currentUser={currentUser} userPermissions={userPermissions} />;
+        }
+
+        function MainApp({ db, auth, currentUser, userPermissions }) {
+            const [currentPage, setCurrentPage] = useState('checkInMe');
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+            const { data: shops } = useCollection(db, 'shops');
+
+            const renderPage = () => {
+                switch (currentPage) {
+                    case 'checkInMe':
+                        return <CheckInMePage db={db} auth={auth} userPermissions={userPermissions} shops={shops} />;
+                    case 'attendanceReport':
+                        return <AttendanceReportPage db={db} />;
+                    case 'leaveRequests':
+                        return <LeaveRequestPage db={db} auth={auth} currentUser={currentUser} userPermissions={userPermissions} />;
+                    case 'settings':
+                        return <SettingsPage db={db} auth={auth} />;
+                    default:
+                        return <CheckInMePage />;
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-slate-900">
+                    <Sidebar currentPage={currentPage} setCurrentPage={setCurrentPage} isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} userPermissions={userPermissions} auth={auth} />
+                    <div className="md:pl-64">
+                        <main>
+                            {renderPage()}
+                        </main>
+                    </div>
+                </div>
+            );
+        }
+        
+        function Sidebar({ currentPage, setCurrentPage, isSidebarOpen, setIsSidebarOpen, userPermissions, auth }) {
+            const { signOut } = window.firebaseSDK;
+            const handleLogout = () => {
+                signOut(auth).catch(error => console.error("Logout failed:", error));
+            };
+
+            return (
+                <>
+                    <div
+                        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity md:hidden ${
+                            isSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                        }`}
+                        onClick={() => setIsSidebarOpen(false)}
+                    ></div>
+                    <aside className={`fixed top-0 left-0 h-full w-64 bg-slate-800/50 border-r border-slate-700 p-4 flex flex-col z-50 transform transition-transform md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                         <div>
+                            <div className="text-2xl font-bold text-slate-100 mb-2">HR System</div>
+                            <div className="text-sm text-slate-400 mb-8">Welcome, {userPermissions.name}</div>
+                        </div>
+                        <nav className="flex flex-col space-y-2 flex-grow">
+                           {Object.values(PAGES).map(page => (
+                                <button
+                                    key={page.id}
+                                    onClick={() => {
+                                        setCurrentPage(page.id);
+                                        if (window.innerWidth < 768) {
+                                           setIsSidebarOpen(false);
+                                        }
+                                    }}
+                                    className={`flex items-center w-full px-4 py-3 text-left transition-all duration-200 rounded-lg transform hover:scale-105 ${
+                                        currentPage === page.id ? 'bg-blue-600 text-white shadow-md' : 'text-slate-300 hover:bg-slate-700 hover:text-white'
+                                    }`}
+                                >
+                                    {page.icon}
+                                    <span className="font-medium">{page.title}</span>
+                                </button>
+                            ))}
+                        </nav>
+                        <div className="mt-auto">
+                            <button onClick={handleLogout} className="flex items-center w-full px-4 py-3 text-left text-red-400 hover:bg-red-900/50 hover:text-white rounded-lg transition-colors">
+                                <svg className="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                <span>Logout</span>
+                            </button>
+                        </div>
+                    </aside>
+                    <button onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="md:hidden fixed top-4 left-4 z-40 bg-blue-600 text-white p-2 rounded-full shadow-lg">
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </>
+            );
+        }
+
+        function CheckInMePage({ db, auth, userPermissions, shops }) {
+            const [time, setTime] = useState(new Date());
+            const [checkInStatus, setCheckInStatus] = useState(null);
+            const [todayRecordId, setTodayRecordId] = useState(null);
+            const [selectedShop, setSelectedShop] = useState(userPermissions.shops?.[0] || '');
+            const [isProcessing, setIsProcessing] = useState(false);
+            const [message, setMessage] = useState('');
+
+            const todayDateString = new Date().toISOString().slice(0, 10);
+
+            useEffect(() => {
+                const timerId = setInterval(() => setTime(new Date()), 1000);
+                return () => clearInterval(timerId);
+            }, []);
+
+            useEffect(() => {
+                const checkExistingRecord = async () => {
+                    const { collection, query, where, getDocs } = window.firebaseSDK;
+                    const q = query(collection(db, "attendanceRecords"), 
+                        where("userId", "==", auth.currentUser.uid),
+                        where("date", "==", todayDateString)
+                    );
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        const record = querySnapshot.docs[0].data();
+                        setCheckInStatus(record.status);
+                        setTodayRecordId(querySnapshot.docs[0].id);
+                    }
+                };
+                checkExistingRecord();
+            }, [db, auth.currentUser.uid, todayDateString]);
+
+            const getDistance = (lat1, lon1, lat2, lon2) => {
+                const R = 6371e3; // metres
+                const φ1 = lat1 * Math.PI/180; // φ, λ in radians
+                const φ2 = lat2 * Math.PI/180;
+                const Δφ = (lat2-lat1) * Math.PI/180;
+                const Δλ = (lon2-lon1) * Math.PI/180;
+
+                const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                          Math.cos(φ1) * Math.cos(φ2) *
+                          Math.sin(Δλ/2) * Math.sin(Δλ/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+                return R * c; // in metres
+            };
+            
+            const handleAttendance = async (type) => {
+                setIsProcessing(true);
+                setMessage('');
+
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLon = position.coords.longitude;
+
+                    const shop = shops.find(s => s.id === selectedShop);
+                    if (!shop || !shop.latitude || !shop.longitude || !shop.radius) {
+                        setMessage("Shop location is not configured. Please contact admin.");
+                        setIsProcessing(false);
+                        return;
+                    }
+
+                    const distance = getDistance(userLat, userLon, parseFloat(shop.latitude), parseFloat(shop.longitude));
+
+                    if (distance > parseFloat(shop.radius)) {
+                        setMessage(`You are too far from the shop to ${type.toLowerCase()}.`);
+                        setIsProcessing(false);
+                        return;
+                    }
+
+                    try {
+                        if (type === 'Check In') {
+                            const { addDoc, collection, serverTimestamp } = window.firebaseSDK;
+                            await addDoc(collection(db, "attendanceRecords"), {
+                                userId: auth.currentUser.uid,
+                                shopId: selectedShop,
+                                checkInTime: serverTimestamp(),
+                                date: todayDateString,
+                                status: 'checked-in'
+                            });
+                            setCheckInStatus('checked-in');
+                            setMessage('Checked in successfully!');
+                        } else {
+                            const { doc, updateDoc, serverTimestamp } = window.firebaseSDK;
+                            await updateDoc(doc(db, "attendanceRecords", todayRecordId), {
+                                checkOutTime: serverTimestamp(),
+                                status: 'checked-out'
+                            });
+                            setCheckInStatus('checked-out');
+                             setMessage('Checked out successfully!');
+                        }
+                    } catch (error) {
+                        setMessage(`Error: ${error.message}`);
+                    } finally {
+                        setIsProcessing(false);
+                    }
+
+                }, (error) => {
+                    setMessage(`Location Error: ${error.message}`);
+                    setIsProcessing(false);
+                });
+            };
+
+            const formatTime = (date) => {
+                return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+            };
+
+            return (
+                <div className="flex flex-col items-center justify-center h-screen">
+                    <div className="text-center bg-slate-800/50 p-10 rounded-lg shadow-lg border border-slate-700">
+                        <h1 className="text-5xl sm:text-7xl font-bold text-slate-100 tracking-wider">{formatTime(time)}</h1>
+                        <p className="text-xl sm:text-2xl text-slate-400 mt-4">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                        {message && <p className="mt-4 text-yellow-300">{message}</p>}
+                        <div className="mt-8 flex justify-center space-x-4">
+                            <button onClick={() => handleAttendance('Check In')} disabled={checkInStatus !== null || isProcessing} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 w-32 disabled:bg-gray-500 disabled:scale-100">
+                                {isProcessing ? '...' : 'Check In'}
+                            </button>
+                            <button onClick={() => handleAttendance('Check Out')} disabled={checkInStatus !== 'checked-in' || isProcessing} className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-transform transform hover:scale-105 w-32 disabled:bg-gray-500 disabled:scale-100">
+                                {isProcessing ? '...' : 'Check Out'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function AttendanceReportPage({ db }) {
+            const [refreshKey, setRefreshKey] = useState(0);
+            const { data: attendanceRecords } = useCollection(db, 'attendanceRecords', refreshKey);
+            const { data: supervisors } = useCollection(db, 'supervisors', refreshKey);
+            const { data: shops } = useCollection(db, 'shops', refreshKey);
+            const { data: leaveRequests } = useCollection(db, 'leaveRequests', refreshKey);
+
+            const reportData = useMemo(() => {
+                return attendanceRecords.map(record => {
+                    const supervisor = supervisors.find(s => s.uid === record.userId);
+                    const shop = shops.find(s => s.id === record.shopId);
+                    const onLeave = leaveRequests.some(lr => lr.requestedById === record.userId && lr.date === record.date && lr.status === 'Approved');
+
+                    return {
+                        ...record,
+                        staffName: supervisor ? supervisor.name : 'N/A',
+                        shopName: shop ? shop.name : 'N/A',
+                        onLeave: onLeave ? 'Y' : 'N'
+                    };
+                });
+            }, [attendanceRecords, supervisors, shops, leaveRequests]);
+
+            return (
+                <div className="py-6 sm:py-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <header className="mb-8">
+                            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Attendance Report</h1>
+                            <p className="text-slate-400 mt-1">Daily attendance records for all staff.</p>
+                        </header>
+                        <div className="bg-slate-800/50 shadow-lg rounded-lg border border-slate-700 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="min-w-full divide-y divide-slate-700">
+                                    <thead className="bg-slate-900/50">
+                                        <tr>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Staff Name</th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Shop Name</th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Check In</th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Check Out</th>
+                                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">On Leave</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-slate-800/50 divide-y divide-slate-700">
+                                        {reportData.map(record => (
+                                            <tr key={record.id} className="hover:bg-slate-700/50">
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200 font-medium">{record.staffName}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.shopName}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.checkInTime ? formatRequestTimestamp(record.checkInTime) : 'N/A'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.checkOutTime ? formatRequestTimestamp(record.checkOutTime) : 'N/A'}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{record.onLeave}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+
+        function LeaveRequestPage({ db, auth, currentUser, userPermissions }) {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [editingRequest, setEditingRequest] = useState(null);
+            const [filters, setFilters] = useState({ shopId: '', status: '', supervisorId: '', date: '' });
+            const [refreshKey, setRefreshKey] = useState(0);
+
+            const { data: employees, loading: employeesLoading } = useCollection(db, 'employees', refreshKey);
+            const { data: shops, loading: shopsLoading } = useCollection(db, 'shops', refreshKey);
+            const { data: leaveRequests, loading: leaveRequestsLoading, lastUpdate } = useCollection(db, 'leaveRequests', refreshKey);
+            const { data: supervisors, loading: supervisorsLoading } = useCollection(db, 'supervisors', refreshKey);
+            
+            const isLoading = employeesLoading || shopsLoading || leaveRequestsLoading || supervisorsLoading;
+
+            const handleFilterChange = (e) => {
+                const { name, value } = e.target;
+                setFilters(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleRefresh = () => {
+                setRefreshKey(prevKey => prevKey + 1);
+            };
+
+            const filteredRequests = useMemo(() => {
+                let requestsToFilter = leaveRequests;
+
+                // Role-based data visibility rules
+                if (userPermissions.role === 'Staff') {
+                    requestsToFilter = leaveRequests.filter(req => req.requestedById === currentUser.uid);
+                } else if (userPermissions.role === 'Shop Manager') {
+                    if (Array.isArray(userPermissions.shops)) {
+                        requestsToFilter = leaveRequests.filter(req => userPermissions.shops.includes(req.shopId));
+                    } else {
+                        requestsToFilter = []; // If no shops assigned, see nothing
+                    }
+                }
+
+                // Apply UI filters on top of permission-filtered data
+                return requestsToFilter.filter(req => {
+                    const shopMatch = !filters.shopId || req.shopId === filters.shopId;
+                    const statusMatch = !filters.status || req.status === filters.status;
+                    const supervisorMatch = !filters.supervisorId || req.supervisorId === filters.supervisorId;
+                    const dateMatch = !filters.date || req.date === filters.date;
+                    return shopMatch && statusMatch && supervisorMatch && dateMatch;
+                });
+            }, [leaveRequests, filters, userPermissions, currentUser]);
+
+            const openModal = (request = null) => {
+                setEditingRequest(request);
+                setIsModalOpen(true);
+            };
+
+            const closeModal = () => {
+                setEditingRequest(null);
+                setIsModalOpen(false);
+            };
+
+            const filteredShops = useMemo(() => {
+                if (userPermissions.role === 'Admin') return shops;
+                if (Array.isArray(userPermissions.shops)) {
+                    return shops.filter(shop => userPermissions.shops.includes(shop.id));
+                }
+                return [];
+            }, [shops, userPermissions]);
+
+            if (isLoading && refreshKey === 0) {
+                return <div className="flex justify-center items-center h-screen"><div className="text-xl font-semibold">Loading Data...</div></div>;
+            }
+
+            return (
+                <div className="py-6 sm:py-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                            <div className="text-sm text-slate-400">
+                                Last updated: {lastUpdate ? lastUpdate.toLocaleTimeString() : 'Checking...'}
+                            </div>
+                            <button onClick={handleRefresh} disabled={leaveRequestsLoading} className="bg-slate-700 text-slate-200 px-4 py-2 rounded-lg shadow-sm border border-slate-600 hover:bg-slate-600 flex items-center disabled:opacity-50">
+                                <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 ${leaveRequestsLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5M20 20v-5h-5M20 4h-5v5M4 20h5v-5" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h5m11 11v-5h-5m0-6h5V4m-5 16h5v-5" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" transform="rotate(-45 12 12)" />
+                                </svg>
+                                {leaveRequestsLoading ? 'Refreshing...' : 'Refresh'}
+                            </button>
+                        </div>
+
+                        {/* --- FILTER CONTROLS --- */}
+                        {userPermissions.role !== 'Staff' && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 p-4 bg-slate-800/50 border border-slate-700 rounded-lg shadow-lg">
+                                <select name="shopId" value={filters.shopId} onChange={handleFilterChange} className="input">
+                                    <option value="">All Shops</option>
+                                    {shops.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                                <select name="status" value={filters.status} onChange={handleFilterChange} className="input">
+                                    <option value="">All Statuses</option>
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                                <select name="supervisorId" value={filters.supervisorId} onChange={handleFilterChange} className="input">
+                                    <option value="">All Supervisors</option>
+                                    {supervisors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                                <input type="date" name="date" value={filters.date} onChange={handleFilterChange} className="input" />
+                            </div>
+                        )}
+
+                        <LeaveRequestsTable 
+                            db={db}
+                            auth={auth}
+                            requests={filteredRequests} 
+                            employees={employees} 
+                            shops={shops} 
+                            supervisors={supervisors}
+                            userPermissions={userPermissions}
+                            onEdit={openModal}
+                        />
+                    </div>
+                    <button onClick={() => openModal()} className="fixed bottom-6 right-6 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 md:hidden">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                    <div className="hidden md:flex justify-end m-8">
+                         <button onClick={() => openModal()} className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">
+                            New Leave Request
+                        </button>
+                    </div>
+                    {isModalOpen && <LeaveRequestModal db={db} auth={auth} request={editingRequest} onClose={closeModal} employees={employees} shops={filteredShops} supervisors={supervisors} userPermissions={userPermissions} />}
+                </div>
+            );
+        }
+
+        function LeaveRequestsTable({ db, auth, requests, employees, shops, supervisors, userPermissions, onEdit }) {
+            const getNameById = (id, list) => list.find(item => item.id === id)?.name || 'N/A';
+            
+            const handleStatusChange = async (request, newStatus) => {
+                if (await showConfirmation(`Are you sure you want to ${newStatus.toLowerCase()} this request?`)) {
+                    const { doc, updateDoc, serverTimestamp } = window.firebaseSDK;
+                    await updateDoc(doc(db, "leaveRequests", request.id), {
+                        status: newStatus,
+                        approvedBy: userPermissions.name,
+                        approvedAt: serverTimestamp()
+                    });
+                }
+            };
+
+            const handleDelete = async (requestId) => {
+                if (await showConfirmation("Are you sure you want to delete this leave request?")) {
+                     const { doc, deleteDoc } = window.firebaseSDK;
+                    await deleteDoc(doc(db, "leaveRequests", requestId));
+                }
+            };
+
+            const displayLeaveDuration = (req) => {
+                if (req.leaveType && req.leaveType !== 'Full Day') {
+                    return `${req.leaveNo} Day (${req.leaveType.replace('Half Day ', '')})`;
+                }
+                return `${req.leaveNo} Day(s)`;
+            };
+
+            const sortedRequests = useMemo(() => {
+                return [...requests].sort((a, b) => {
+                    if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+                    if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+                    const dateA = a.requestDate?.toDate ? a.requestDate.toDate() : new Date(0);
+                    const dateB = b.requestDate?.toDate ? b.requestDate.toDate() : new Date(0);
+                    return dateB - dateA;
+                });
+            }, [requests]);
+
+            return (
+                <div className="bg-slate-800/50 shadow-lg rounded-lg border border-slate-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-700 hidden md:table">
+                            <thead className="bg-slate-900/50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Request Date</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Shop Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Staff Name</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Leave No.</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Leave Date</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Return Date</th>
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase">Status</th>
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-slate-400 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-slate-800/50 divide-y divide-slate-700">
+                                {sortedRequests.map(req => {
+                                    const canManage = userPermissions.role === 'Admin' || 
+                                                      (userPermissions.role === 'Shop Manager' && 
+                                                       Array.isArray(userPermissions.shops) &&
+                                                       userPermissions.shops.includes(req.shopId) &&
+                                                       userPermissions.id === req.supervisorId);
+
+                                    return (
+                                        <tr key={req.id} className="hover:bg-slate-700/50">
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{formatRequestTimestamp(req.requestDate)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{getNameById(req.shopId, shops)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-200 font-medium">{getNameById(req.employeeId, employees)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{displayLeaveDuration(req)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{formatDate(req.date)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">{formatDate(req.returnDate)}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                    req.status === 'Approved' ? 'bg-green-900/50 text-green-300' : 
+                                                    req.status === 'Rejected' ? 'bg-red-900/50 text-red-300' : 'bg-yellow-900/50 text-yellow-300'
+                                                }`}>
+                                                    {req.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                {canManage && req.status === 'Pending' && (
+                                                    <>
+                                                        <button onClick={() => handleStatusChange(req, 'Approved')} className="text-green-400 hover:text-green-300 mr-4">Approve</button>
+                                                        <button onClick={() => handleStatusChange(req, 'Rejected')} className="text-red-400 hover:text-red-300 mr-4">Reject</button>
+                                                    </>
+                                                )}
+                                                <button onClick={() => onEdit(req)} disabled={!canManage} className={!canManage ? "text-indigo-400 cursor-not-allowed mr-4" : "text-indigo-400 hover:text-indigo-300 mr-4"}>Edit</button>
+                                                <button onClick={() => handleDelete(req.id)} disabled={!canManage} className={!canManage ? "text-red-400 cursor-not-allowed" : "text-red-400 hover:text-red-300"}>Delete</button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        <div className="md:hidden p-4 space-y-4">
+                            {sortedRequests.map(req => {
+                                const canManage = userPermissions.role === 'Admin' || 
+                                                      (userPermissions.role === 'Shop Manager' && 
+                                                       Array.isArray(userPermissions.shops) &&
+                                                       userPermissions.shops.includes(req.shopId) &&
+                                                       userPermissions.id === req.supervisorId);
+                                return (
+                                <div key={req.id} className="bg-slate-800/50 p-4 rounded-lg shadow-lg border border-slate-700">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <div className="text-sm font-semibold text-slate-100">{getNameById(req.employeeId, employees)}</div>
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                            req.status === 'Approved' ? 'bg-green-900/50 text-green-300' : 
+                                            req.status === 'Rejected' ? 'bg-red-900/50 text-red-300' : 'bg-yellow-900/50 text-yellow-300'
+                                        }`}>
+                                            {req.status}
+                                        </span>
+                                    </div>
+                                    <div className="text-sm text-slate-400 mb-1"><strong>Shop:</strong> {getNameById(req.shopId, shops)}</div>
+                                    <div className="text-sm text-slate-400 mb-1"><strong>Requested:</strong> {formatRequestTimestamp(req.requestDate)}</div>
+                                    <div className="text-sm text-slate-400 mb-1"><strong>Leave Date:</strong> {formatDate(req.date)}</div>
+                                    <div className="text-sm text-slate-400 mb-1"><strong>Return Date:</strong> {formatDate(req.returnDate)}</div>
+                                    <div className="text-sm text-slate-400 mb-1"><strong>Duration:</strong> {displayLeaveDuration(req)}</div>
+                                    <div className="flex justify-end space-x-2 mt-4">
+                                        {canManage && req.status === 'Pending' && (
+                                            <>
+                                                <button onClick={() => handleStatusChange(req, 'Approved')} className="text-green-400 hover:text-green-300">Approve</button>
+                                                <button onClick={() => handleStatusChange(req, 'Rejected')} className="text-red-400 hover:text-red-300">Reject</button>
+                                            </>
+                                        )}
+                                        <button onClick={() => onEdit(req)} disabled={!canManage} className={!canManage ? "text-indigo-400 cursor-not-allowed" : "text-indigo-400 hover:text-indigo-300"}>Edit</button>
+                                        <button onClick={() => handleDelete(req.id)} disabled={!canManage} className={!canManage ? "text-red-400 cursor-not-allowed" : "text-red-400 hover:text-red-300"}>Delete</button>
+                                    </div>
+                                </div>
+                            )})}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function LeaveRequestModal({ db, auth, request, onClose, employees, shops, supervisors, userPermissions }) {
+            const initialFormState = {
+                date: '',
+                returnDate: '',
+                shopId: '',
+                employeeId: '',
+                supervisorId: '',
+                leaveNo: 1,
+                leaveType: 'Full Day',
+                note: '',
+                status: 'Pending',
+                requestedBy: userPermissions.name,
+                requestedById: auth.currentUser.uid
+            };
+            const [formData, setFormData] = useState(request || initialFormState);
+            const [isSaving, setIsSaving] = useState(false);
+
+            useEffect(() => {
+                if (formData.leaveType === 'Full Day') {
+                    if (formData.date && formData.returnDate) {
+                        const start = new Date(formData.date);
+                        const end = new Date(formData.returnDate);
+                        if (end >= start) {
+                            const diffTime = end.getTime() - start.getTime();
+                            const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                            setFormData(prev => ({ ...prev, leaveNo: diffDays }));
+                        } else {
+                            setFormData(prev => ({ ...prev, leaveNo: 0 }));
+                        }
+                    }
+                } else if (formData.leaveType && formData.leaveType.includes('Half Day')) {
+                    setFormData(prev => ({ ...prev, leaveNo: 0.5, returnDate: formData.date }));
+                }
+            }, [formData.date, formData.returnDate, formData.leaveType]);
+
+            const filteredEmployees = useMemo(() => {
+                if (!formData.shopId) return [];
+                return employees.filter(emp => emp.shop === formData.shopId && emp.staffStatus === 'Active');
+            }, [formData.shopId, employees]);
+            
+            const filteredSupervisors = useMemo(() => {
+                if (!formData.shopId) return [];
+                const supervisorIdsInShop = new Set(
+                    employees
+                        .filter(emp => emp.shop === formData.shopId && emp.supervisor)
+                        .map(emp => emp.supervisor)
+                );
+                return supervisors.filter(sup => supervisorIdsInShop.has(sup.id));
+            }, [formData.shopId, employees, supervisors]);
+
+
+            const handleShopChange = (e) => {
+                const shopId = e.target.value;
+                setFormData(prev => ({ ...prev, shopId, employeeId: '', supervisorId: '' }));
+            };
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                setFormData(prev => ({ ...prev, [name]: value }));
+            };
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                try {
+                    const { doc, updateDoc, addDoc, collection, serverTimestamp } = window.firebaseSDK;
+                    const dataToSave = { ...formData, leaveNo: parseFloat(formData.leaveNo) };
+
+                    if (request) {
+                        await updateDoc(doc(db, "leaveRequests", request.id), dataToSave);
+                    } else {
+                        await addDoc(collection(db, "leaveRequests"), { ...dataToSave, requestDate: serverTimestamp(), createdAt: serverTimestamp() });
+                    }
+                    onClose();
+                } catch (error) {
+                    console.error("Error saving leave request:", error);
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            return (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3 className="text-xl font-semibold mb-4 text-slate-100">{request ? 'Edit Leave Request' : 'New Leave Request'}</h3>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Request Date</label>
+                                <input type="text" value={request ? formatRequestTimestamp(request.requestDate) : 'Will be set on submission'} className="input bg-slate-700" readOnly />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Shop</label>
+                                <select name="shopId" value={formData.shopId} onChange={handleShopChange} className="input" required>
+                                    <option value="">Select Shop</option>
+                                    {shops.map(shop => <option key={shop.id} value={shop.id}>{shop.name}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Employee</label>
+                                <select name="employeeId" value={formData.employeeId} onChange={handleChange} className="input" required disabled={!formData.shopId}>
+                                    <option value="">Select Employee</option>
+                                    {filteredEmployees.map(emp => <option key={emp.id} value={emp.id}>{emp.name}</option>)}
+                                </select>
+                            </div>
+                             <div>
+                                <label className="block text-sm font-medium text-slate-400">Supervisor</label>
+                                <select name="supervisorId" value={formData.supervisorId} onChange={handleChange} className="input" required disabled={!formData.shopId}>
+                                    <option value="">Select Supervisor</option>
+                                    {filteredSupervisors.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Leave Type</label>
+                                <select name="leaveType" value={formData.leaveType} onChange={handleChange} className="input" required>
+                                    <option>Full Day</option>
+                                    <option>Half Day (AM)</option>
+                                    <option>Half Day (PM)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Leave Date</label>
+                                <input type="date" name="date" value={formData.date} onChange={handleChange} className="input" required />
+                            </div>
+                            {formData.leaveType === 'Full Day' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400">Return Date</label>
+                                    <input type="date" name="returnDate" value={formData.returnDate} onChange={handleChange} className="input" required />
+                                </div>
+                            )}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Number of Days</label>
+                                <input type="number" name="leaveNo" value={formData.leaveNo} onChange={handleChange} className="input" min="0.5" step="0.5" required />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400">Reason / Note</label>
+                                <textarea name="note" value={formData.note} onChange={handleChange} rows="3" className="input"></textarea>
+                            </div>
+                            <div className="flex justify-end space-x-3 pt-4">
+                                <button type="button" onClick={onClose} className="bg-slate-600 text-slate-200 py-2 px-4 border border-slate-500 rounded-md shadow-sm text-sm font-medium hover:bg-slate-500">Cancel</button>
+                                <button type="submit" disabled={isSaving} className="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700">{isSaving ? 'Saving...' : 'Submit Request'}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+        
+        function SettingsPage({ db, auth }) {
+            const [activeTab, setActiveTab] = useState('shopProperties');
+            const [refreshKey, setRefreshKey] = useState(0);
+
+            const { data: shops, loading: shopsLoading } = useCollection(db, 'shops', refreshKey);
+            const { data: supervisors, loading: supervisorsLoading } = useCollection(db, 'supervisors', refreshKey);
+
+            const TabButton = ({ tabName, title }) => (
+                <button
+                    onClick={() => setActiveTab(tabName)}
+                    className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 flex-grow text-center sm:flex-grow-0 ${
+                        activeTab === tabName ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
+                    }`}
+                >
+                    {title}
+                </button>
+            );
+
+            const shopFormFields = [
+                { name: 'name', label: 'Shop Name', required: true },
+                { name: 'latitude', label: 'Latitude', type: 'text', required: false },
+                { name: 'longitude', label: 'Longitude', type: 'text', required: false },
+                { name: 'radius', label: 'Radio Distance (m)', type: 'number', required: false },
+                { name: 'note', label: 'Note', type: 'text', fullWidth: true }
+            ];
+
+            const shopListColumns = [
+                { header: 'Shop Name', accessor: 'name' },
+                { header: 'Latitude', accessor: 'latitude' },
+                { header: 'Longitude', accessor: 'longitude' },
+                { header: 'Radius (m)', accessor: 'radius' },
+                { header: 'Note', accessor: 'note' }
+            ];
+
+            const pagePermissionOptions = Object.values(PAGES).map(p => ({ id: p.id, name: p.title }));
+
+            const supervisorFormFields = [
+                { name: 'name', label: 'Staff Name', required: true },
+                { name: 'email', label: 'Email', type: 'email', required: true },
+                { name: 'uid', label: 'UID', type: 'text', required: false },
+                { name: 'role', label: 'Role', type: 'select', options: [{id: 'Admin', name: 'Admin'}, {id: 'Shop Manager', name: 'Shop Manager'}, {id: 'Staff', name: 'Staff'}], placeholder: 'Select Role', required: true },
+                { name: 'shops', label: 'Assigned Shops', type: 'checkbox-group', options: shops },
+                { name: 'pagePermissions', label: 'Page Permissions', type: 'checkbox-group', options: pagePermissionOptions }
+            ];
+
+            const supervisorListColumns = [
+                { header: 'Staff Name', accessor: 'name' },
+                { header: 'Email', accessor: 'email' },
+                { header: 'Role', accessor: 'role' },
+                { 
+                    header: 'Assigned Shops', 
+                    render: (item) => 
+                        item.shops && Array.isArray(item.shops) 
+                        ? item.shops
+                            .map(shopId => shops.find(s => s.id === shopId)?.name || 'N/A')
+                            .join(', ') 
+                        : 'N/A' 
+                }
+            ];
+
+            return (
+                <div className="py-6 sm:py-10">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <header>
+                            <h1 className="text-3xl md:text-4xl font-bold text-slate-100">Settings</h1>
+                            <p className="text-slate-400 mt-1">Manage your application settings.</p>
+                        </header>
+                        <div className="mt-6 flex flex-wrap gap-2 bg-slate-800/50 p-1 rounded-lg border border-slate-700">
+                            <TabButton tabName="shopProperties" title="Shop Properties" />
+                            <TabButton tabName="loginUser" title="Login User" />
+                        </div>
+                        <div className="mt-6">
+                            {activeTab === 'shopProperties' && (
+                                <SettingsCRUD 
+                                    db={db} 
+                                    auth={auth} 
+                                    title="Shop" 
+                                    collectionName="shops" 
+                                    items={shops} 
+                                    formFields={shopFormFields} 
+                                    listColumns={shopListColumns} 
+                                />
+                            )}
+                            {activeTab === 'loginUser' && (
+                                <SettingsCRUD 
+                                    db={db} 
+                                    auth={auth} 
+                                    title="User" 
+                                    collectionName="supervisors" 
+                                    items={supervisors} 
+                                    formFields={supervisorFormFields} 
+                                    listColumns={supervisorListColumns} 
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        function SettingsCRUD({ db, auth, title, collectionName, items, formFields, listColumns }) {
+            const [editingItem, setEditingItem] = useState(null);
+            const [newItem, setNewItem] = useState({});
+
+            const getInitialState = useCallback(() => {
+                return formFields.reduce((acc, field) => {
+                    acc[field.name] = (field.type === 'checkbox-group') ? [] : '';
+                    return acc;
+                }, {});
+            }, [formFields]);
+
+            useEffect(() => {
+                setNewItem(getInitialState());
+            }, [getInitialState]);
+
+            const handleSave = async (item) => {
+                const { doc, updateDoc, addDoc, collection } = window.firebaseSDK;
+                const dataToSave = { ...item };
+                try {
+                    if (item.id) {
+                        const { id, ...data } = dataToSave;
+                        await updateDoc(doc(db, collectionName, id), data);
+                    } else {
+                        await addDoc(collection(db, collectionName), dataToSave);
+                    }
+                    setEditingItem(null);
+                    setNewItem(getInitialState());
+                } catch (e) {
+                    console.error(`Error saving ${collectionName}:`, e);
+                }
+            };
+            
+            const handleDelete = async (id) => {
+                if (await showConfirmation(`Are you sure you want to delete this item?`)) {
+                    try {
+                        const { doc, deleteDoc } = window.firebaseSDK;
+                        await deleteDoc(doc(db, collectionName, id));
+                    } catch (e) {
+                        console.error(`Error deleting ${collectionName}:`, e);
+                    }
+                }
+            };
+
+            const handleInputChange = (e, item, setItem) => {
+                const { name, type, value, checked } = e.target;
+                 if (type === 'checkbox') {
+                    const currentValues = item[name] || [];
+                    if (checked) {
+                        setItem({ ...item, [name]: [...currentValues, value] });
+                    } else {
+                        setItem({ ...item, [name]: currentValues.filter(val => val !== value) });
+                    }
+                } else {
+                    setItem({ ...item, [name]: value });
+                }
+            };
+
+            const renderForm = (item, setItem, isNew = false) => (
+                 <form onSubmit={(e) => { e.preventDefault(); handleSave(item); }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end p-4 bg-slate-800/50 rounded-lg mb-6 border border-slate-700">
+                    {formFields.map(field => (
+                        <div key={field.name} className={field.fullWidth ? 'col-span-full' : ''}>
+                            <label className="block text-sm font-medium text-slate-400">{field.label}</label>
+                            {field.type === 'select' ? (
+                                <select name={field.name} value={item[field.name] || ''} onChange={(e) => handleInputChange(e, item, setItem)} className="input" required={field.required}>
+                                    <option value="">{field.placeholder}</option>
+                                    {field.options.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+                                </select>
+                            ) : field.type === 'checkbox-group' ? (
+                                <div className="checkbox-group">
+                                    {field.options.map(opt => (
+                                        <div key={opt.id} className="flex items-center">
+                                            <input
+                                                id={`${field.name}-${opt.id}`}
+                                                name={field.name}
+                                                type="checkbox"
+                                                value={opt.id}
+                                                checked={(item[field.name] || []).includes(opt.id)}
+                                                onChange={(e) => handleInputChange(e, item, setItem)}
+                                                className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                            />
+                                            <label htmlFor={`${field.name}-${opt.id}`} className="ml-2 block text-sm text-slate-300">{opt.name}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <input type={field.type || 'text'} name={field.name} value={item[field.name] || ''} onChange={(e) => handleInputChange(e, item, setItem)} className="input" required={field.required} />
+                            )}
+                        </div>
+                    ))}
+                    <div className="flex space-x-2 col-span-1 self-end">
+                        <button type="submit" className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition-colors">
+                            {isNew ? `Add ${title}` : 'Save'}
+                        </button>
+                        {!isNew && <button type="button" onClick={() => setEditingItem(null)} className="w-full bg-slate-600 text-slate-200 px-4 py-2 rounded-lg hover:bg-slate-500">Cancel</button>}
+                    </div>
+                </form>
+            );
+
+            return (
+                <div className="bg-slate-800/50 p-6 rounded-lg border border-slate-700">
+                    <h2 className="text-2xl font-semibold text-slate-100 mb-4">{title} Properties</h2>
+                    {renderForm(newItem, setNewItem, true)}
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-slate-700">
+                             <thead className="bg-slate-900/50">
+                                <tr>
+                                    {listColumns.map(col => <th key={col.header} className="px-6 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">{col.header}</th>)}
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-slate-400 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-slate-800/50 divide-y divide-slate-700">
+                                {items.map(item => (
+                                    <tr key={item.id} className="hover:bg-slate-700/50">
+                                        {editingItem?.id === item.id ? (
+                                            <td colSpan={listColumns.length + 1} className="p-0">
+                                                {renderForm(editingItem, setEditingItem)}
+                                            </td>
+                                        ) : (
+                                            <>
+                                                {listColumns.map(col => (
+                                                    <td key={col.header} className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                                                        {col.render ? col.render(item) : item[col.accessor]}
+                                                    </td>
+                                                ))}
+                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                                    <button onClick={() => setEditingItem({ ...item, shops: item.shops || [], pagePermissions: item.pagePermissions || [] })} className="text-indigo-400 hover:text-indigo-300 mr-4">Edit</button>
+                                                    <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-300">Delete</button>
+                                                </td>
+                                            </>
+                                        )}
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+        }
+        
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
