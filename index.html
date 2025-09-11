@@ -326,7 +326,7 @@
                         <FormInput label="Date" type="date" name="date" value={formData.date} onChange={handleFormChange} required />
                         <FormSelect label="Shop" name="shop" value={formData.shop} onChange={handleFormChange} options={shops.map(s => ({value: s.name, label: s.name}))} required />
                         <FormInput label="Staff" name="staff" value={formData.staff} disabled />
-                        <FormSelect label="Shift" name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'Morning', label:'Morning'}, {value:'Afternoon', label:'Afternoon'}, {value:'Night', label:'Night'}]} />
+                        <FormSelect label="Shift" name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'AM', label:'AM'}, {value:'PM', label:'PM'}]} />
                         <CurrencyInputGroup title="By Cash" khrName="cashKhr" usdName="cashUsd" khrValue={formData.cashKhr} usdValue={formData.cashUsd} onChange={handleFormChange} />
                         <CurrencyInputGroup title="By Bank" khrName="bankKhr" usdName="bankUsd" khrValue={formData.bankKhr} usdValue={formData.bankUsd} onChange={handleFormChange} />
                         <FormInput label="Note" name="note" value={formData.note} onChange={handleFormChange} placeholder="Add an optional note..."/>
@@ -417,7 +417,7 @@
             const getInitialState = useCallback(() => ({
                 date: new Date().toISOString().split('T')[0],
                 shop: (userData?.role === 'Admin' || userData?.role === 'Management') ? (shops[0]?.name || '') : (shops.find(s => userData?.shopIds?.includes(s.id))?.name || ''),
-                staff: userData?.name || '', shift: 'Morning',
+                staff: userData?.name || '', shift: 'AM',
                 cashUsd: '', cashKhr: '', bankUsd: '', bankKhr: '', note: '',
             }), [shops, userData]);
 
@@ -476,7 +476,7 @@
                                 <FormInput label="Date" type="date" name="date" value={formData.date} onChange={handleFormChange} required />
                                 <FormSelect label="Shop" name="shop" value={formData.shop} onChange={handleFormChange} options={availableShops.map(s => ({value: s.name, label: s.name}))} required />
                                 <FormInput label="Staff" name="staff" value={formData.staff} disabled />
-                                <FormSelect label="Shift" name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'Morning', label:'Morning'}, {value:'Afternoon', label:'Afternoon'}, {value:'Night', label:'Night'}]} />
+                                <FormSelect label="Shift" name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'AM', label:'AM'}, {value:'PM', label:'PM'}]} />
                             </div>
                             <div className="space-y-4 pt-6 mt-6 border-t border-slate-700">
                                 <CurrencyInputGroup title="By Cash" khrName="cashKhr" usdName="cashUsd" khrValue={formData.cashKhr} usdValue={formData.cashUsd} onChange={handleFormChange} />
@@ -514,7 +514,7 @@
         const ReportsDashboard = () => {
             const { reports, shops, appSettings } = useAppContext();
             const { db, userData } = useAuth();
-            const [filters, setFilters] = useState({ shop: '', dueTime: 'Daily', startDate: '', endDate: '' });
+            const [filters, setFilters] = useState({ shop: '', dueTime: 'Today', startDate: '', endDate: '' });
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [modalState, setModalState] = useState({ edit: null, delete: null, note: null, customDate: false });
 
@@ -575,17 +575,43 @@
                 
                 let filtered = userFilteredReports;
                 const { dueTime, startDate, endDate, shop } = filters;
+                const now = new Date();
 
-                if (dueTime === 'Daily') {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= yesterday);
-                } else if (dueTime === 'Monthly') {
-                    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                if (dueTime === 'Today') {
+                    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    startOfToday.setHours(0, 0, 0, 0);
+                    filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= startOfToday);
+                } else if (dueTime === 'Yesterday') {
+                    const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                    startOfYesterday.setHours(0, 0, 0, 0);
+                    const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                    endOfYesterday.setHours(23, 59, 59, 999);
+                    filtered = userFilteredReports.filter(r => {
+                        const reportDate = r.createdAt?.toDate();
+                        return reportDate >= startOfYesterday && reportDate <= endOfYesterday;
+                    });
+                } else if (dueTime === 'This Month') {
+                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
                     filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= startOfMonth);
-                } else if (dueTime === 'Yearly') {
-                    const startOfYear = new Date(new Date().getFullYear(), 0, 1);
+                } else if (dueTime === 'Last Month') {
+                    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                    endOfLastMonth.setHours(23, 59, 59, 999);
+                    filtered = userFilteredReports.filter(r => {
+                        const reportDate = r.createdAt?.toDate();
+                        return reportDate >= startOfLastMonth && reportDate <= endOfLastMonth;
+                    });
+                } else if (dueTime === 'This Year') {
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
                     filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= startOfYear);
+                } else if (dueTime === 'Last Year') {
+                    const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
+                    const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
+                    endOfLastYear.setHours(23, 59, 59, 999);
+                    filtered = userFilteredReports.filter(r => {
+                        const reportDate = r.createdAt?.toDate();
+                        return reportDate >= startOfLastYear && reportDate <= endOfLastYear;
+                    });
                 } else if (dueTime === 'Custom' && startDate && endDate) {
                     const start = new Date(startDate);
                     const end = new Date(endDate);
@@ -595,11 +621,13 @@
                 
                 if (shop) filtered = filtered.filter(r => r.shop === shop);
                 
-                if (dueTime === 'Daily' || dueTime === 'Custom') return { type: 'detailed', data: filtered };
+                if (['Today', 'Yesterday', 'Custom'].includes(dueTime)) return { type: 'detailed', data: filtered };
                 
                 const aggregated = filtered.reduce((acc, report) => {
                     const date = report.createdAt.toDate();
-                    const period = (dueTime === 'Monthly') ? date.toLocaleString('default', { month: 'short', year: 'numeric' }) : date.getFullYear().toString();
+                    const period = ['This Month', 'Last Month'].includes(dueTime)
+                        ? date.toLocaleString('default', { month: 'short', year: 'numeric' })
+                        : date.getFullYear().toString();
                     const key = `${period}|${report.shop}`;
                     if (!acc[key]) acc[key] = { period, shop: report.shop, cashUsd: 0, cashKhr: 0, bankUsd: 0, bankKhr: 0, grandTotalKhr: 0 };
                     acc[key].cashUsd += report.cashUsd || 0; acc[key].cashKhr += report.cashKhr || 0;
@@ -672,7 +700,15 @@
             return (
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-slate-900/50 rounded-lg items-center">
                     <FormSelect label="Shop" name="shop" value={filters.shop} onChange={handleFilterChange} options={[{value:'',label:'All Shops'}, ...shops.map(s=>({value:s.name, label:s.name}))]} />
-                    <FormSelect label="Due Time" name="dueTime" value={filters.dueTime} onChange={handleFilterChange} options={[{value:'Daily',label:'Daily'},{value:'Monthly',label:'Monthly'},{value:'Yearly',label:'Yearly'},{value:'Custom', label:'Custom'}]} />
+                    <FormSelect label="Due Time" name="dueTime" value={filters.dueTime} onChange={handleFilterChange} options={[
+                        {value:'Today',label:'Today'},
+                        {value:'Yesterday',label:'Yesterday'},
+                        {value:'This Month',label:'This Month'}, 
+                        {value:'Last Month',label:'Last Month'}, 
+                        {value:'This Year',label:'This Year'},
+                        {value:'Last Year',label:'Last Year'},
+                        {value:'Custom', label:'Custom'}
+                    ]} />
                 </div>
             );
         });
@@ -688,6 +724,7 @@
                                 <tr>
                                     <th className="p-3">{viewType === 'Custom' ? 'Date' : 'Date & Time'}</th><th className="p-3">Shop</th>
                                     {viewType !== 'Custom' && <th className="p-3">Staff</th>}
+                                    {['Today', 'Yesterday'].includes(viewType) && <th className="p-3">Shift</th>}
                                     <th className="p-3 text-right">Net Sale (៛)</th><th className="p-3 text-right">Cash USD</th><th className="p-3 text-right">Cash KHR</th>
                                     <th className="p-3 text-right">Bank USD</th><th className="p-3 text-right">Bank KHR</th>
                                     {viewType !== 'Custom' && <th className="p-3 text-center">Actions</th>}
@@ -699,6 +736,7 @@
                                         <td className="p-3 whitespace-nowrap text-slate-400">{viewType === 'Custom' ? formatDateDDMMYY(r.createdAt) : r.createdAt?.toDate().toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh' })}</td>
                                         <td className="p-3 text-slate-300">{r.shop}</td>
                                         {viewType !== 'Custom' && <td className="p-3 text-slate-300">{r.staff}</td>}
+                                        {['Today', 'Yesterday'].includes(viewType) && <td className="p-3 text-slate-300">{r.shift}</td>}
                                         <td className="p-3 text-right font-bold text-blue-400">{formatCurrency(r.grandTotalKhr, 'KHR')}</td>
                                         <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashKhr, 'KHR')}</td>
                                         <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.bankKhr, 'KHR')}</td>
@@ -711,7 +749,7 @@
                                 ))}
                             </tbody>
                             <tfoot className="bg-slate-800 font-bold"><tr>
-                                <td colSpan={viewType === 'Custom' ? 2 : 3} className="p-3 text-right text-slate-300">Sub-Total</td>
+                                <td colSpan={viewType === 'Custom' ? 2 : 4} className="p-3 text-right text-slate-300">Sub-Total</td>
                                 <td className="p-3 text-right font-mono text-blue-400">{formatCurrency(totals.netSale, 'KHR')}</td>
                                 <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashKhr, 'KHR')}</td>
                                 <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankKhr, 'KHR')}</td>
@@ -820,5 +858,7 @@
     </script>
 </body>
 </html>
+
+
 
 
