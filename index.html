@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="CashDrop">
-    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkNhc2ggRHJvcCBSZXBvcnQiLAogICJzaG9ydF9uYW1lIjogIkNhc2hEcm9wIiwKICAiaWQiOiAiLz9zb3VyY2U9cHdhIiwKICAiZGVzY3JpcHRpb24iOiAiQSBzaW1wbGUgYXBwIGZvciByZXBvcnRpbmcgZGFpbHkgY2FzaCBkcm9wcy4iLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2YxZjVmOSIsCiAgInRoZW1lX2NvbG9yIjogIiMxZDRlZDgiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL3BsYWNlaG9sZC5jby8xOTJ4MTkyLzFkNGVkOC9mZmZmZmY/dGV4dD1DRFIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9wbGFjZWhvbGQuY28vNTEyeDUxMi8xZDRlZDgvZmZmZmZmP3RleHQ9Q0RSIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAgInNpemVzIjogIjUxMng1MTIiLAogICAgICAicHVycG9zZSI6ICJhbnkgbWFza2FibGUiCiAgICB9CiAgXQp9">
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIkNhc2ggRHJvcCBSZXBvcnQiLAogICJzaG9ydF9uYW1lIjogIkNhc2hEcm9wIiwKICAiaWQiOiAiLz9zb3VyY2U9cHdhIiwKICAiZGVzY3JpcHRpb24iOiAiQSBzaW1wbGUgYXBwIGZvciByZXBvcnRpbmcgZGFpbHkgY2FzaCBkcm9wcy4iLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI2YxZjVmOSIsCiAgInRoZW1lX2NvbG9yIjogIiMxZDRlZDgiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJodHRwczovL3BsYWNlaG9sZC5jby8xOTJ4MTkyLzFkNGVkOC9mZmZmZmY/dGV4dD1DRFIiLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9wbGFjZWhvbGQuY28vNTEyeDUxMi8xZDRlZDgvZmZmZmZmP3RleHQ9Q0RSIiwKICAgICAgInR5cGUiOiAiaW1hZ2UvcG5nIiwKICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0=">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -65,15 +65,200 @@
             measurementId: "G-LVLMJ8ZY0B"
         };
         const DEFAULT_EXCHANGE_RATE = 4000;
+        const ROLES = {
+            ADMIN: 'Admin',
+            MANAGEMENT: 'Management',
+            SHOP_MANAGER: 'Shop Manager',
+            CASHIER: 'Cashier',
+            STAFF: 'Staff'
+        };
 
         /******************************************************************************
-         * CONTEXT & CUSTOM HOOKS
+         * I18N (Internationalization)
+         *****************************************************************************/
+        const translations = {
+            en: {
+                loginTitle: 'JLW Cash Drop',
+                loginSubtitle1: 'Internal Use Only.',
+                loginSubtitle2: 'Please log in to your account.',
+                emailPlaceholder: 'Email address',
+                passwordPlaceholder: 'Password',
+                rememberMe: 'Remember me',
+                loginButton: 'Log In',
+                loginError: 'Failed to log in. Please check your email and password.',
+                employeeProfileError: 'Your employee profile was not found. Please contact an administrator.',
+                headerTitle: 'Cash Drop Report',
+                welcomeMessage: 'Welcome, {{name}} ({{role}})',
+                installAppButton: 'Install App',
+                logoutButton: 'Logout',
+                newFormTitle: 'New Cash Drop Form',
+                dateLabel: 'Date',
+                shopLabel: 'Shop',
+                staffLabel: 'Staff',
+                shiftLabel: 'Shift',
+                byCashTitle: 'By Cash',
+                byBankTitle: 'By Bank',
+                cashExchangeTitle: 'Cash Exchange',
+                khrLabel: 'KHR (៛)',
+                usdLabel: 'USD ($)',
+                noteLabel: 'Note',
+                notePlaceholder: 'Add an optional note...',
+                submitReportButton: 'Submit Report',
+                summaryTitle: 'Summary',
+                grandTotalLabel: 'Grand Total',
+                cashKhrLabel: 'Cash KHR',
+                cashUsdLabel: 'Cash USD',
+                bankKhrLabel: 'Bank KHR',
+                bankUsdLabel: 'Bank USD',
+                cashExchangeKhrLabel: 'Cash Exchange KHR',
+                cashExchangeUsdLabel: 'Cash Exchange USD',
+                confirmSubmissionTitle: 'Confirm Report Submission',
+                confirmSubmissionMessage: 'Please review the details before submitting. Is everything correct?',
+                cancelButton: 'Cancel',
+                confirmButton: 'Yes, Confirm',
+                confirmDeletionTitle: 'Confirm Deletion',
+                confirmDeletionMessage: 'Are you sure you want to delete this report? This action cannot be undone.',
+                deleteButton: 'Delete',
+                customDateTitle: 'Select Custom Date Range',
+                startDateLabel: 'Start Date',
+                endDateLabel: 'End Date',
+                applyButton: 'Apply',
+                editReportTitle: 'Edit Report',
+                saveChangesButton: 'Save Changes',
+                reportNoteTitle: 'Report Note',
+                closeButton: 'Close',
+                submissionSuccessTitle: 'Report Submitted Successfully',
+                submissionSuccessMessage: 'You can now take a screenshot of this summary for your records.',
+                historyTitle: 'Daily Cash Drop History',
+                exportButton: 'Export to Excel',
+                allShops: 'All Shops',
+                dueTimeLabel: 'Timeframe',
+                timeFilters: { today: 'Today', yesterday: 'Yesterday', thisMonth: 'This Month', lastMonth: 'Last Month', thisYear: 'This Year', lastYear: 'Last Year', custom: 'Custom' },
+                noReportsFound: 'No reports found for the selected filters.',
+                dateHeader: 'Date',
+                dateTimeHeader: 'Date & Time',
+                shopHeader: 'Shop',
+                staffHeader: 'Staff',
+                shiftHeader: 'Shift',
+                netSaleHeader: 'Net Sale (៛)',
+                cashUsdHeader: 'Cash USD',
+                cashKhrHeader: 'Cash KHR',
+                bankUsdHeader: 'Bank USD',
+                bankKhrHeader: 'Bank KHR',
+                cashExchUsdHeader: 'Cash Exch. USD',
+                cashExchKhrHeader: 'Cash Exch. KHR',
+                actionsHeader: 'Actions',
+                subTotal: 'Sub-Total'
+            },
+            km: {
+                loginTitle: 'JLW បញ្ចូលសាច់ប្រាក់',
+                loginSubtitle1: 'សម្រាប់ប្រើប្រាស់តែក្នុងក្រុមហ៊ុនប៉ុណ្ណោះ!',
+                loginSubtitle2: 'សូមចូលទៅកាន់គណនីរបស់អ្នក!',
+                emailPlaceholder: 'អាសយដ្ឋានអ៊ីមែល',
+                passwordPlaceholder: 'ពាក្យសម្ងាត់',
+                rememberMe: 'ចងចាំខ្ញុំ',
+                loginButton: 'ចូលគណនី',
+                loginError: 'ការចូលគណនីបានបរាជ័យ។ សូមពិនិត្យអ៊ីមែល និងពាក្យសម្ងាត់របស់អ្នក។',
+                employeeProfileError: 'រកមិនឃើញប្រវត្តិរូបបុគ្គលិករបស់អ្នកទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។',
+                headerTitle: 'របាយការណ៍បញ្ចូលសាច់ប្រាក់',
+                welcomeMessage: 'សូមស្វាគមន៍, {{name}} ({{role}})',
+                installAppButton: 'ដំឡើងកម្មវិធី',
+                logoutButton: 'ចាកចេញ',
+                newFormTitle: 'ទម្រង់បញ្ចូលសាច់ប្រាក់ថ្មី',
+                dateLabel: 'កាលបរិច្ឆេទ',
+                shopLabel: 'ហាង',
+                staffLabel: 'បុគ្គលិក',
+                shiftLabel: 'វេន',
+                byCashTitle: 'តាមសាច់ប្រាក់',
+                byBankTitle: 'តាមធនាគារ',
+                cashExchangeTitle: 'សាច់ប្រាក់សម្រាប់ដូរ',
+                khrLabel: 'រៀល (៛)',
+                usdLabel: 'ដុល្លារ ($)',
+                noteLabel: 'កំណត់ចំណាំ',
+                notePlaceholder: 'បន្ថែមចំណាំ (បើមាន)...',
+                submitReportButton: 'បញ្ជូនរបាយការណ៍',
+                summaryTitle: 'សេចក្តីសង្ខេប',
+                grandTotalLabel: 'សរុប​រួម',
+                cashKhrLabel: 'សាច់ប្រាក់ រៀល',
+                cashUsdLabel: 'សាច់ប្រាក់ ដុល្លារ',
+                bankKhrLabel: 'ធនាគារ រៀល',
+                bankUsdLabel: 'ធនាគារ ដុល្លារ',
+                cashExchangeKhrLabel: 'សាច់ប្រាក់ដូរ រៀល',
+                cashExchangeUsdLabel: 'សាច់ប្រាក់ដូរ ដុល្លារ',
+                confirmSubmissionTitle: 'បញ្ជាក់ការបញ្ជូនរបាយការណ៍',
+                confirmSubmissionMessage: 'សូមពិនិត្យមើលព័ត៌មានលម្អិតមុនពេលបញ្ជូន។ ត្រឹមត្រូវហើយឬនៅ?',
+                cancelButton: 'បោះបង់',
+                confirmButton: 'បាទ/ចាស៎',
+                confirmDeletionTitle: 'បញ្ជាក់ការលុប',
+                confirmDeletionMessage: 'តើអ្នកប្រាកដថាចង់លុបរូបាយការណ៍នេះមែនទេ? សកម្មភាពនេះមិនអាចមិនធ្វើវិញបានទេ។',
+                deleteButton: 'លុប',
+                customDateTitle: 'ជ្រើសរើសចន្លោះកាលបរិច្ឆេទ',
+                startDateLabel: 'ថ្ងៃចាប់ផ្តើម',
+                endDateLabel: 'ថ្ងៃបញ្ចប់',
+                applyButton: 'អនុវត្ត',
+                editReportTitle: 'កែសម្រួលរបាយការណ៍',
+                saveChangesButton: 'រក្សាទុកការផ្លាស់ប្តូរ',
+                reportNoteTitle: 'កំណត់ចំណាំរបាយការណ៍',
+                closeButton: 'បិទ',
+                submissionSuccessTitle: 'របាយការណ៍លក់ត្រូវបានបញ្ចូលជោគជ័យ',
+                submissionSuccessMessage: 'សូមអ្នកធ្វើការថតរបាយការណ៍នេះដើម្បីរាយការណ៍ជូនថ្នាក់លើ!',
+                historyTitle: 'ប្រវត្តិរបាយការណ៍បញ្ចូលសាច់ប្រាក់',
+                exportButton: 'នាំចេញជា Excel',
+                allShops: 'គ្រប់ហាងទាំងអស់',
+                dueTimeLabel: 'ពេលវេលា',
+                timeFilters: { today: 'ថ្ងៃនេះ', yesterday: 'ម្សិលមិញ', thisMonth: 'ខែនេះ', lastMonth: 'ខែមុន', thisYear: 'ឆ្នាំនេះ', lastYear: 'ឆ្នាំមុន', custom: 'ផ្ទាល់ខ្លួន' },
+                noReportsFound: 'រកមិនឃើញរបាយការណ៍សម្រាប់តម្រងដែលបានជ្រើសរើសទេ។',
+                dateHeader: 'កាលបរិច្ឆេទ',
+                dateTimeHeader: 'កាលបរិច្ឆេទ & ម៉ោង',
+                shopHeader: 'ហាង',
+                staffHeader: 'បុគ្គលិក',
+                shiftHeader: 'វេន',
+                netSaleHeader: 'លក់សរុប (៛)',
+                cashUsdHeader: 'សាច់ប្រាក់ USD',
+                cashKhrHeader: 'សាច់ប្រាក់ KHR',
+                bankUsdHeader: 'ធនាគារ USD',
+                bankKhrHeader: 'ធនាគារ KHR',
+                cashExchUsdHeader: 'សាច់ប្រាក់ដូរ USD',
+                cashExchKhrHeader: 'សាច់ប្រាក់ដូរ KHR',
+                actionsHeader: 'សកម្មភាព',
+                subTotal: 'សរុបរង'
+            }
+        };
+
+        const LanguageContext = createContext();
+
+        const LanguageProvider = ({ children }) => {
+            const [locale, setLocale] = useState('km');
+
+            const t = useCallback((key, params = {}) => {
+                const keys = key.split('.');
+                let result = translations[locale];
+                for (const k of keys) {
+                    result = result?.[k];
+                    if (result === undefined) {
+                        console.warn(`Translation key "${key}" not found for locale "${locale}"`);
+                        return key;
+                    }
+                }
+                if (typeof result === 'string' && params) {
+                    Object.entries(params).forEach(([paramKey, paramValue]) => {
+                        result = result.replace(new RegExp(`{{${paramKey}}}`, 'g'), paramValue);
+                    });
+                }
+                return result;
+            }, [locale]);
+
+            const value = { locale, setLocale, t };
+            return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
+        };
+
+        const useTranslation = () => useContext(LanguageContext);
+
+        /******************************************************************************
+         * CONTEXT
          *****************************************************************************/
         const AuthContext = createContext();
         const AppContext = createContext();
-
-        const useAuth = () => useContext(AuthContext);
-        const useAppContext = () => useContext(AppContext);
 
         /******************************************************************************
          * PROVIDERS
@@ -102,7 +287,7 @@
                             setUserData({ uid: firebaseUser.uid, ...userDoc.data() });
                         } else {
                             await window.firebase.signOut(firebaseAuth);
-                            setAuthError({ message: `Your employee profile was not found. Please contact an administrator.` });
+                            setAuthError({ message: `employeeProfileError` });
                         }
                     } else {
                         setUser(null);
@@ -121,32 +306,36 @@
                 return window.firebase.signInWithEmailAndPassword(auth, email, password);
             }, [auth]);
 
-            const logout = useCallback(() => window.firebase.signOut(auth), [auth]);
+            const logout = useCallback(() => auth && window.firebase.signOut(auth), [auth]);
 
             const value = { user, userData, login, logout, db, loading, authError, setAuthError };
             return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
         };
 
         const AppProvider = ({ children }) => {
-            const { db } = useAuth();
+            const { db, userData } = useAuth();
             const [shops, setShops] = useState([]);
             const [reports, setReports] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
-                if (!db) return;
+                if (!db || !userData) return;
                 
-                const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-                const reportsQuery = window.firebase.query(
-                    window.firebase.collection(db, "cashDrops"), 
-                    window.firebase.orderBy("createdAt", "desc"),
-                    window.firebase.where("createdAt", ">=", startOfMonth)
-                );
-                
-                const unsubReports = window.firebase.onSnapshot(reportsQuery, 
-                    (snapshot) => setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    (err) => console.error("Error fetching reports:", err)
-                );
+                let unsubReports = () => {};
+
+                const canViewDashboard = userData.role !== ROLES.CASHIER && userData.role !== ROLES.STAFF;
+
+                if (canViewDashboard) {
+                    const reportsQuery = window.firebase.query(
+                        window.firebase.collection(db, "cashDrops"), 
+                        window.firebase.orderBy("createdAt", "desc")
+                    );
+                    
+                    unsubReports = window.firebase.onSnapshot(reportsQuery, 
+                        (snapshot) => setReports(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                        (err) => console.error("Error fetching reports:", err)
+                    );
+                }
                 
                 const unsubShops = window.firebase.onSnapshot(window.firebase.collection(db, "shops"), (snapshot) => {
                     setShops(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -160,28 +349,144 @@
                     unsubReports();
                     unsubShops();
                 };
-            }, [db]);
+            }, [db, userData]);
 
             const value = { shops, reports, isLoading, appSettings: { exchangeRate: DEFAULT_EXCHANGE_RATE } };
             return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
         };
         
         /******************************************************************************
+         * CUSTOM HOOKS
+         *****************************************************************************/
+        const useAuth = () => useContext(AuthContext);
+        const useAppContext = () => useContext(AppContext);
+
+        const useFilteredReports = (reports, filters, userData, availableShops) => {
+            return useMemo(() => {
+                if (!reports || !userData) return { filteredAndAggregatedData: null, totals: {} };
+
+                const userFilteredReports = (userData.role === ROLES.ADMIN || userData.role === ROLES.MANAGEMENT)
+                    ? reports
+                    : reports.filter(report => availableShops.map(s => s.name).includes(report.shop));
+
+                let filtered = userFilteredReports;
+                const { dueTime, startDate, endDate, shop } = filters;
+                const now = new Date();
+
+                if (dueTime) {
+                    let startFilterDate, endFilterDate;
+                    switch (dueTime) {
+                        case 'Today':
+                            startFilterDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                            break;
+                        case 'Yesterday':
+                            startFilterDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+                            endFilterDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 23, 59, 59, 999);
+                            break;
+                        case 'This Month':
+                            startFilterDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                            break;
+                        case 'Last Month':
+                            startFilterDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                            endFilterDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+                            break;
+                        case 'This Year':
+                            startFilterDate = new Date(now.getFullYear(), 0, 1);
+                            break;
+                        case 'Last Year':
+                            startFilterDate = new Date(now.getFullYear() - 1, 0, 1);
+                            endFilterDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59, 999);
+                            break;
+                        case 'Custom':
+                            if (startDate && endDate) {
+                                startFilterDate = new Date(startDate);
+                                endFilterDate = new Date(endDate);
+                                endFilterDate.setHours(23, 59, 59, 999);
+                            }
+                            break;
+                    }
+
+                    if (startFilterDate) {
+                        filtered = filtered.filter(r => {
+                            const reportDate = r.createdAt?.toDate();
+                            if (!reportDate) return false;
+                            const isAfterStart = reportDate >= startFilterDate;
+                            const isBeforeEnd = endFilterDate ? reportDate <= endFilterDate : true;
+                            return isAfterStart && isBeforeEnd;
+                        });
+                    }
+                }
+                
+                if (shop) filtered = filtered.filter(r => r.shop === shop);
+                
+                let type = 'detailed';
+                let data = filtered;
+
+                if (!['Today', 'Yesterday', 'Custom'].includes(dueTime)) {
+                    type = 'aggregated';
+                    const aggregated = filtered.reduce((acc, report) => {
+                        const date = report.createdAt.toDate();
+                        const period = ['This Month', 'Last Month'].includes(dueTime)
+                            ? date.toLocaleString('en-US', { month: 'short', year: 'numeric' })
+                            : date.getFullYear().toString();
+                        const key = `${period}|${report.shop}`;
+                        if (!acc[key]) {
+                            acc[key] = { period, shop: report.shop, cashUsd: 0, cashKhr: 0, bankUsd: 0, bankKhr: 0, grandTotalKhr: 0, cashExchangeKhr: 0, cashExchangeUsd: 0 };
+                        }
+                        acc[key].cashUsd += report.cashUsd || 0;
+                        acc[key].cashKhr += report.cashKhr || 0;
+                        acc[key].bankUsd += report.bankUsd || 0;
+                        acc[key].bankKhr += report.bankKhr || 0;
+                        acc[key].cashExchangeKhr += report.cashExchangeKhr || 0;
+                        acc[key].cashExchangeUsd += report.cashExchangeUsd || 0;
+                        acc[key].grandTotalKhr += report.grandTotalKhr || 0;
+                        return acc;
+                    }, {});
+                    data = Object.values(aggregated);
+                }
+
+                const totals = data.reduce((acc, r) => {
+                    acc.cashUsd += r.cashUsd || 0;
+                    acc.cashKhr += r.cashKhr || 0;
+                    acc.bankUsd += r.bankUsd || 0;
+                    acc.bankKhr += r.bankKhr || 0;
+                    acc.cashExchangeKhr += r.cashExchangeKhr || 0;
+                    acc.cashExchangeUsd += r.cashExchangeUsd || 0;
+                    acc.netSale += r.grandTotalKhr || 0;
+                    return acc;
+                }, { cashUsd: 0, cashKhr: 0, bankUsd: 0, bankKhr: 0, cashExchangeKhr: 0, cashExchangeUsd: 0, netSale: 0 });
+
+                return { filteredAndAggregatedData: { type, data }, totals };
+
+            }, [reports, filters, userData, availableShops]);
+        };
+        
+        /******************************************************************************
          * UTILITY FUNCTIONS
          *****************************************************************************/
+        const formatInputAsCurrency = (val) => val.replace(/[^0-9.]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        
         const formatCurrency = (value, currency) => {
             const number = parseFloat(String(value).replace(/,/g, '')) || 0;
             const formatted = number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             return currency === 'KHR' ? `${formatted} ៛` : (currency === 'USD' ? `${formatted} $` : formatted);
         };
         
-        const formatDateDDMMYY = (date) => {
+        const formatDateDDMMYYYY = (date) => {
             if (!date) return 'N/A';
             const d = date.toDate ? date.toDate() : new Date(date);
             const day = String(d.getDate()).padStart(2, '0');
             const month = String(d.getMonth() + 1).padStart(2, '0');
-            const year = String(d.getFullYear()).slice(-2);
+            const year = d.getFullYear();
             return `${day}-${month}-${year}`;
+        };
+
+        const formatFullDateTime = (date) => {
+            if (!date) return 'N/A';
+            const d = date.toDate ? date.toDate() : new Date(date);
+            const datePart = formatDateDDMMYYYY(d);
+            const timePart = d.toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            return `${datePart} | ${timePart}`;
         };
 
         /******************************************************************************
@@ -235,63 +540,74 @@
             </div>
         ));
         
-        const CurrencyInputGroup = React.memo(({ title, khrName, usdName, khrValue, usdValue, onChange }) => (
-            <div>
-                <h3 className="text-md font-semibold text-slate-400">{title}</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                    <FormInput label="KHR (៛)" name={khrName} value={khrValue} onChange={onChange} placeholder="0.00" />
-                    <FormInput label="USD ($)" name={usdName} value={usdValue} onChange={onChange} placeholder="0.00" />
+        const CurrencyInputGroup = React.memo(({ title, khrName, usdName, khrValue, usdValue, onChange }) => {
+            const { t } = useTranslation();
+            return (
+                <div>
+                    <h3 className="text-md font-semibold text-slate-400">{title}</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                        <FormInput label={t('khrLabel')} name={khrName} value={khrValue} onChange={onChange} placeholder="0.00" />
+                        <FormInput label={t('usdLabel')} name={usdName} value={usdValue} onChange={onChange} placeholder="0.00" />
+                    </div>
                 </div>
-            </div>
-        ));
+            )
+        });
         
         /******************************************************************************
          * MODAL COMPONENTS
          *****************************************************************************/
-        const SubmitConfirmationModal = ({ onConfirm, onClose, isSubmitting }) => (
-            <Modal isOpen={true} onClose={onClose}>
-                <div className="p-6"><h3 className="text-lg font-bold text-slate-100">បញ្ជាក់ការបញ្ជូនរបាយការណ៍</h3><p className="mt-2 text-sm text-slate-400">សូមពិនិត្យមើលព័ត៌មានលម្អិតមុនពេលបញ្ជូន ត្រឹមត្រូវហើយ?</p></div>
-                <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 rounded-b-lg">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 disabled:opacity-50">បោះបង់</button>
-                    <button onClick={onConfirm} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
-                        {isSubmitting && <Icon name="loader" className="w-4 h-4" />} បាទ​/ចាស៎
-                    </button>
-                </div>
-            </Modal>
-        );
+        const SubmitConfirmationModal = ({ onConfirm, onClose, isSubmitting }) => {
+            const { t } = useTranslation();
+            return (
+                <Modal isOpen={true} onClose={onClose}>
+                    <div className="p-6"><h3 className="text-lg font-bold text-slate-100">{t('confirmSubmissionTitle')}</h3><p className="mt-2 text-sm text-slate-400">{t('confirmSubmissionMessage')}</p></div>
+                    <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 rounded-b-lg">
+                        <button onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 disabled:opacity-50">{t('cancelButton')}</button>
+                        <button onClick={onConfirm} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+                            {isSubmitting && <Icon name="loader" className="w-4 h-4" />} {t('confirmButton')}
+                        </button>
+                    </div>
+                </Modal>
+            );
+        };
         
-        const DeleteConfirmationModal = ({ onConfirm, onClose, isSubmitting, isOpen }) => (
-            <Modal isOpen={isOpen} onClose={onClose}>
-                <div className="p-6"><h3 className="text-lg font-bold text-slate-100">Confirm Deletion</h3><p className="mt-2 text-sm text-slate-400">Are you sure you want to delete this report? This action cannot be undone.</p></div>
-                <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 rounded-b-lg">
-                    <button onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 disabled:opacity-50">Cancel</button>
-                    <button onClick={onConfirm} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2">
-                        {isSubmitting && <Icon name="loader" className="w-4 h-4" />} Delete
-                    </button>
-                </div>
-            </Modal>
-        );
+        const DeleteConfirmationModal = ({ onConfirm, onClose, isSubmitting, isOpen }) => {
+            const { t } = useTranslation();
+            return (
+                <Modal isOpen={isOpen} onClose={onClose}>
+                    <div className="p-6"><h3 className="text-lg font-bold text-slate-100">{t('confirmDeletionTitle')}</h3><p className="mt-2 text-sm text-slate-400">{t('confirmDeletionMessage')}</p></div>
+                    <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 rounded-b-lg">
+                        <button onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600 disabled:opacity-50">{t('cancelButton')}</button>
+                        <button onClick={onConfirm} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-2">
+                            {isSubmitting && <Icon name="loader" className="w-4 h-4" />} {t('deleteButton')}
+                        </button>
+                    </div>
+                </Modal>
+            );
+        };
         
         const CustomDateRangeModal = ({ isOpen, onClose, onApply }) => {
+            const { t } = useTranslation();
             const [dates, setDates] = useState({ startDate: '', endDate: '' });
             const handleApply = () => { onApply(dates); onClose(); };
             return (
                 <Modal isOpen={isOpen} onClose={onClose}>
-                    <div className="p-6"><h3 className="text-lg font-bold text-slate-100">Select Custom Date Range</h3>
+                    <div className="p-6"><h3 className="text-lg font-bold text-slate-100">{t('customDateTitle')}</h3>
                         <div className="mt-4 space-y-4">
-                            <FormInput label="Start Date" type="date" value={dates.startDate} onChange={e => setDates(d => ({...d, startDate: e.target.value}))} />
-                            <FormInput label="End Date" type="date" value={dates.endDate} onChange={e => setDates(d => ({...d, endDate: e.target.value}))} />
+                            <FormInput label={t('startDateLabel')} type="date" value={dates.startDate} onChange={e => setDates(d => ({...d, startDate: e.target.value}))} />
+                            <FormInput label={t('endDateLabel')} type="date" value={dates.endDate} onChange={e => setDates(d => ({...d, endDate: e.target.value}))} />
                         </div>
                     </div>
                     <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 rounded-b-lg">
-                        <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600">Cancel</button>
-                        <button onClick={handleApply} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Apply</button>
+                        <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600">{t('cancelButton')}</button>
+                        <button onClick={handleApply} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">{t('applyButton')}</button>
                     </div>
                 </Modal>
             );
         };
 
         const EditReportModal = ({ isOpen, onClose, onSave, report, isSubmitting, shops }) => {
+            const { t } = useTranslation();
             const [formData, setFormData] = useState({});
             const formRef = useRef(null);
             
@@ -301,17 +617,19 @@
                         date: report.createdAt?.toDate().toISOString().split('T')[0] || '',
                         cashUsd: String(report.cashUsd || ''), cashKhr: String(report.cashKhr || ''),
                         bankUsd: String(report.bankUsd || ''), bankKhr: String(report.bankKhr || ''),
+                        cashExchangeKhr: String(report.cashExchangeKhr || ''),
+                        cashExchangeUsd: String(report.cashExchangeUsd || ''),
                         note: report.note || '',
                     });
+                } else {
+                    setFormData({});
                 }
             }, [report]);
 
             const handleFormChange = useCallback((e) => {
                 const { name, value } = e.target;
-                const formatCurrencyValue = (val) => val.replace(/[^0-9.]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                
-                if (['cashUsd', 'cashKhr', 'bankUsd', 'bankKhr'].includes(name)) {
-                    setFormData(prev => ({ ...prev, [name]: formatCurrencyValue(value) }));
+                if (['cashUsd', 'cashKhr', 'bankUsd', 'bankKhr', 'cashExchangeKhr', 'cashExchangeUsd'].includes(name)) {
+                    setFormData(prev => ({ ...prev, [name]: formatInputAsCurrency(value) }));
                 } else {
                     setFormData(prev => ({ ...prev, [name]: value }));
                 }
@@ -321,41 +639,124 @@
             
             return (
                 <Modal isOpen={isOpen} onClose={onClose}>
-                    <div className="p-6 border-b border-slate-700"><h3 className="text-lg font-bold text-slate-100">Edit Report</h3></div>
+                    <div className="p-6 border-b border-slate-700"><h3 className="text-lg font-bold text-slate-100">{t('editReportTitle')}</h3></div>
                     <form ref={formRef} onSubmit={handleSave} className="flex-grow overflow-y-auto p-6 space-y-4">
-                        <FormInput label="Date" type="date" name="date" value={formData.date} onChange={handleFormChange} required />
-                        <FormSelect label="Shop" name="shop" value={formData.shop} onChange={handleFormChange} options={shops.map(s => ({value: s.name, label: s.name}))} required />
-                        <FormInput label="Staff" name="staff" value={formData.staff} disabled />
-                        <FormSelect label="Shift" name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'AM', label:'AM'}, {value:'PM', label:'PM'}]} />
-                        <CurrencyInputGroup title="By Cash" khrName="cashKhr" usdName="cashUsd" khrValue={formData.cashKhr} usdValue={formData.cashUsd} onChange={handleFormChange} />
-                        <CurrencyInputGroup title="By Bank" khrName="bankKhr" usdName="bankUsd" khrValue={formData.bankKhr} usdValue={formData.bankUsd} onChange={handleFormChange} />
-                        <FormInput label="Note" name="note" value={formData.note} onChange={handleFormChange} placeholder="Add an optional note..."/>
+                        <FormInput label={t('dateLabel')} type="date" name="date" value={formData.date || ''} onChange={handleFormChange} required />
+                        <FormSelect label={t('shopLabel')} name="shop" value={formData.shop || ''} onChange={handleFormChange} options={shops.map(s => ({value: s.name, label: s.name}))} required />
+                        <FormInput label={t('staffLabel')} name="staff" value={formData.staff || ''} disabled />
+                        <FormSelect label={t('shiftLabel')} name="shift" value={formData.shift || 'AM'} onChange={handleFormChange} options={[{value:'AM', label:'AM'}, {value:'PM', label:'PM'}]} />
+                        <CurrencyInputGroup title={t('byCashTitle')} khrName="cashKhr" usdName="cashUsd" khrValue={formData.cashKhr || ''} usdValue={formData.cashUsd || ''} onChange={handleFormChange} />
+                        <CurrencyInputGroup title={t('byBankTitle')} khrName="bankKhr" usdName="bankUsd" khrValue={formData.bankKhr || ''} usdValue={formData.bankUsd || ''} onChange={handleFormChange} />
+                        <CurrencyInputGroup title={t('cashExchangeTitle')} khrName="cashExchangeKhr" usdName="cashExchangeUsd" khrValue={formData.cashExchangeKhr || ''} usdValue={formData.cashExchangeUsd || ''} onChange={handleFormChange} />
+                        <FormInput label={t('noteLabel')} name="note" value={formData.note || ''} onChange={handleFormChange} placeholder={t('notePlaceholder')}/>
                     </form>
                     <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 border-t border-slate-700 sticky bottom-0 rounded-b-lg">
-                        <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600">Cancel</button>
-                        <button type="submit" form="edit-report-form" onClick={() => formRef.current.requestSubmit()} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
-                            {isSubmitting && <Icon name="loader" className="w-4 h-4" />} Save Changes
+                        <button type="button" onClick={onClose} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600">{t('cancelButton')}</button>
+                        <button type="submit" onClick={() => formRef.current.requestSubmit()} disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2">
+                            {isSubmitting && <Icon name="loader" className="w-4 h-4" />} {t('saveChangesButton')}
                         </button>
                     </div>
                 </Modal>
             );
         };
 
-        const NoteViewModal = ({ isOpen, onClose, note }) => (
-            <Modal isOpen={isOpen} onClose={onClose}>
-                <div className="p-6 border-b border-slate-700"><h3 className="text-lg font-bold text-slate-100">Report Note</h3></div>
-                <div className="p-6 flex-grow overflow-y-auto"><p className="text-slate-300 whitespace-pre-wrap">{note}</p></div>
-                <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 border-t border-slate-700 rounded-b-lg">
-                    <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600">Close</button>
-                </div>
-            </Modal>
-        );
+        const NoteViewModal = ({ isOpen, onClose, note }) => {
+            const { t } = useTranslation();
+            return (
+                <Modal isOpen={isOpen} onClose={onClose}>
+                    <div className="p-6 border-b border-slate-700"><h3 className="text-lg font-bold text-slate-100">{t('reportNoteTitle')}</h3></div>
+                    <div className="p-6 flex-grow overflow-y-auto"><p className="text-slate-300 whitespace-pre-wrap">{note}</p></div>
+                    <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 border-t border-slate-700 rounded-b-lg">
+                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-slate-200 bg-slate-700 border border-slate-600 rounded-md hover:bg-slate-600">{t('closeButton')}</button>
+                    </div>
+                </Modal>
+            );
+        };
+
+        const SummaryPreviewModal = ({ isOpen, onClose, formData, grandTotal }) => {
+            const { t } = useTranslation();
+            const SummaryContent = () => {
+                const [currentTime, setCurrentTime] = useState(new Date());
+
+                useEffect(() => {
+                    const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
+                    return () => clearInterval(timerId);
+                }, []);
+
+                const formattedDate = useMemo(() => {
+                    if (!formData.date) return 'N/A';
+                    const [year, month, day] = formData.date.split('-');
+                    return `${day}-${month}-${year}`;
+                }, [formData.date]);
+                
+                return (
+                     <div className="bg-slate-800 border border-slate-700 p-6 rounded-lg shadow-lg space-y-4">
+                        <div className="border-b border-slate-700 pb-4">
+                            <h3 className="text-xl font-semibold text-slate-100 text-center">{t('summaryTitle')}</h3>
+                            <div className="text-center text-sm mt-2">
+                                 <p className="font-semibold text-slate-300">
+                                    <span className="font-sans">{formattedDate}</span>
+                                    <span className="mx-2 text-slate-500">|</span>
+                                    <span className="font-mono">{currentTime.toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                </p>
+                            </div>
+                        </div>
+                        <div className="space-y-2 text-sm pt-2">
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('shopLabel')}:</span><span className="font-semibold text-slate-200">{formData.shop}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('staffLabel')}:</span><span className="font-semibold text-slate-200">{formData.staff}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('shiftLabel')}:</span><span className="font-semibold text-slate-200">{formData.shift}</span></div>
+                        </div>
+                        <div className="border-t border-slate-700 !my-4"></div>
+                        <div className="space-y-3 text-md">
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashKhrLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashKhr, 'KHR')}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashUsdLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashUsd, 'USD')}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('bankKhrLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.bankKhr, 'KHR')}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('bankUsdLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.bankUsd, 'USD')}</span></div>
+                        </div>
+                        <div className="border-t border-slate-700 !my-4"></div>
+                        <div className="flex justify-between items-center"><span className="font-bold text-slate-100 text-lg">{t('grandTotalLabel')} :</span><span className="font-extrabold text-red-500 text-2xl">{formatCurrency(grandTotal, 'KHR')}</span></div>
+                        <div className="border-t border-slate-700 !my-4"></div>
+                        <div className="space-y-3 text-md">
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashExchangeKhrLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashExchangeKhr, 'KHR')}</span></div>
+                            <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashExchangeUsdLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashExchangeUsd, 'USD')}</span></div>
+                        </div>
+                        {formData.note && (
+                            <>
+                                <div className="border-t border-slate-700 !my-4"></div>
+                                <div>
+                                    <h4 className="font-semibold text-slate-300 mb-1">{t('noteLabel')}:</h4>
+                                    <p className="text-sm text-slate-400 bg-slate-900/50 p-3 rounded-md whitespace-pre-wrap">{formData.note}</p>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                );
+            }
+            
+            return (
+                <Modal isOpen={isOpen} onClose={onClose}>
+                    <div className="p-6 border-b border-slate-700 text-center">
+                        <h3 className="text-lg font-bold text-slate-100">{t('submissionSuccessTitle')}</h3>
+                        <p className="mt-2 text-sm text-slate-400">{t('submissionSuccessMessage')}</p>
+                    </div>
+                    <div className="p-6 flex-grow overflow-y-auto bg-slate-900">
+                        <SummaryContent />
+                    </div>
+                    <div className="bg-slate-900/50 px-6 py-3 flex justify-end items-center gap-3 border-t border-slate-700 rounded-b-lg">
+                        <button type="button" onClick={onClose} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">
+                            {t('closeButton')}
+                        </button>
+                    </div>
+                </Modal>
+            );
+        };
 
         /******************************************************************************
          * LOGIN PAGE
          *****************************************************************************/
         const LoginPage = () => {
             const { login, authError, setAuthError } = useAuth();
+            const { t, setLocale, locale } = useTranslation();
             const [credentials, setCredentials] = useState({ email: '', password: '' });
             const [error, setError] = useState(null);
             const [loading, setLoading] = useState(false);
@@ -363,11 +764,8 @@
             const [rememberMe, setRememberMe] = useState(true);
 
             useEffect(() => {
-                if (authError) {
-                    setError(authError);
-                    setAuthError(null); // Clear error after displaying
-                }
-            }, [authError, setAuthError]);
+                if (authError) { setError({ message: t(authError.message) }); setAuthError(null); }
+            }, [authError, setAuthError, t]);
             
             const handleChange = (e) => setCredentials(prev => ({...prev, [e.target.name]: e.target.value}));
 
@@ -378,7 +776,7 @@
                 try {
                     await login(credentials.email, credentials.password, rememberMe);
                 } catch (err) {
-                    setError({ message: 'Failed to log in. Please check your email and password.' });
+                    setError({ message: t('loginError') });
                 } finally {
                     setLoading(false);
                 }
@@ -387,18 +785,30 @@
             return (
                 <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4">
                     <div className="w-full max-w-md">
+                        <div className="absolute top-4 right-4">
+                            <div className="flex items-center gap-2 bg-slate-700/50 p-1 rounded-lg">
+                                <button onClick={() => setLocale('en')} className={`px-3 py-1 text-sm rounded-md ${locale === 'en' ? 'bg-blue-600 text-white' : 'text-slate-300'}`}>EN</button>
+                                <button onClick={() => setLocale('km')} className={`px-3 py-1 text-sm rounded-md ${locale === 'km' ? 'bg-blue-600 text-white' : 'text-slate-300'}`}>ខ្មែរ</button>
+                            </div>
+                        </div>
                         <div className="bg-slate-800/50 p-8 md:p-10 rounded-2xl shadow-lg border border-slate-700">
-                            <div className="text-center mb-8"><h1 className="text-3xl font-bold text-slate-100">JLW Cash Drop</h1><p className="mt-2 text-sm text-slate-400">Internal Use Only. Please log in.</p></div>
+                            <div className="text-center mb-8">
+                                <h1 className="text-3xl font-bold text-slate-100">{t('loginTitle')}</h1>
+                                <div className="mt-2 text-sm text-slate-400">
+                                    <p>{t('loginSubtitle1')}</p>
+                                    <p>{t('loginSubtitle2')}</p>
+                                </div>
+                            </div>
                             <form onSubmit={handleSubmit} className="space-y-6">
-                                <div className="relative"><input id="email" name="email" type="email" value={credentials.email} onChange={handleChange} required placeholder="Email address" className="block w-full pl-4 pr-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"/></div>
+                                <div className="relative"><input id="email" name="email" type="email" value={credentials.email} onChange={handleChange} required placeholder={t('emailPlaceholder')} className="block w-full pl-4 pr-3 py-2.5 bg-slate-700 border border-slate-600 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"/></div>
                                 <div className="relative">
-                                    <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={credentials.password} onChange={handleChange} required placeholder="Password" className="block w-full pl-4 pr-10 py-2.5 bg-slate-700 border border-slate-600 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"/>
+                                    <input id="password" name="password" type={showPassword ? 'text' : 'password'} value={credentials.password} onChange={handleChange} required placeholder={t('passwordPlaceholder')} className="block w-full pl-4 pr-10 py-2.5 bg-slate-700 border border-slate-600 rounded-lg placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-100"/>
                                     <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-200">{showPassword ? <Icon name="eye-off" /> : <Icon name="eye" />}</button>
                                 </div>
-                                <div className="flex items-center"><input id="remember-me" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-600 rounded bg-slate-700"/><label htmlFor="remember-me" className="ml-2 block text-sm text-slate-300">Remember me</label></div>
+                                <div className="flex items-center"><input id="remember-me" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-600 rounded bg-slate-700"/><label htmlFor="remember-me" className="ml-2 block text-sm text-slate-300">{t('rememberMe')}</label></div>
                                 {error && <p className="text-red-500 text-sm text-center">{error.message}</p>}
                                 <button type="submit" disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center disabled:opacity-50 transition-all shadow-lg hover:shadow-blue-500/50">
-                                    {loading ? <Icon name="loader" /> : 'Log In'}
+                                    {loading ? <Icon name="loader" /> : t('loginButton')}
                                 </button>
                             </form>
                         </div>
@@ -413,26 +823,29 @@
         const NewCashDropForm = () => {
             const { shops, appSettings } = useAppContext();
             const { db, userData } = useAuth();
+            const { t } = useTranslation();
             
             const getInitialState = useCallback(() => ({
                 date: new Date().toISOString().split('T')[0],
-                shop: (userData?.role === 'Admin' || userData?.role === 'Management') ? (shops[0]?.name || '') : (shops.find(s => userData?.shopIds?.includes(s.id))?.name || ''),
+                shop: (userData?.role === ROLES.ADMIN || userData?.role === ROLES.MANAGEMENT) ? (shops[0]?.name || '') : (shops.find(s => userData?.shopIds?.includes(s.id))?.name || ''),
                 staff: userData?.name || '', shift: 'AM',
-                cashUsd: '', cashKhr: '', bankUsd: '', bankKhr: '', note: '',
+                cashUsd: '', cashKhr: '', bankUsd: '', bankKhr: '',
+                cashExchangeKhr: '', cashExchangeUsd: '',
+                note: '',
             }), [shops, userData]);
 
             const [formData, setFormData] = useState(getInitialState);
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [isConfirming, setIsConfirming] = useState(false);
+            const [isPreviewing, setIsPreviewing] = useState(false);
+            const [lastSubmittedData, setLastSubmittedData] = useState(null);
 
             useEffect(() => { setFormData(getInitialState()) }, [getInitialState]);
             
             const handleFormChange = useCallback((e) => {
                 const { name, value } = e.target;
-                const formatCurrencyValue = (val) => val.replace(/[^0-9.]/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                
-                if (['cashUsd', 'cashKhr', 'bankUsd', 'bankKhr'].includes(name)) {
-                    setFormData(prev => ({ ...prev, [name]: formatCurrencyValue(value) }));
+                if (['cashUsd', 'cashKhr', 'bankUsd', 'bankKhr', 'cashExchangeKhr', 'cashExchangeUsd'].includes(name)) {
+                    setFormData(prev => ({ ...prev, [name]: formatInputAsCurrency(value) }));
                 } else {
                     setFormData(prev => ({ ...prev, [name]: value }));
                 }
@@ -442,27 +855,41 @@
                 const clean = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
                 return (clean(formData.cashUsd) + clean(formData.bankUsd)) * appSettings.exchangeRate + clean(formData.cashKhr) + clean(formData.bankKhr);
             }, [formData, appSettings.exchangeRate]);
-
+            
             const handleConfirmSubmit = useCallback(async () => {
+                setIsConfirming(false);
                 setIsSubmitting(true);
                 try {
                     const clean = (val) => parseFloat(String(val).replace(/,/g, '')) || 0;
-                    await window.firebase.addDoc(window.firebase.collection(db, "cashDrops"), {
+                    const submissionData = {
                         ...formData,
                         cashUsd: clean(formData.cashUsd), cashKhr: clean(formData.cashKhr),
                         bankUsd: clean(formData.bankUsd), bankKhr: clean(formData.bankKhr),
+                        cashExchangeKhr: clean(formData.cashExchangeKhr), 
+                        cashExchangeUsd: clean(formData.cashExchangeUsd),
                         grandTotalKhr: grandTotal,
-                        createdAt: window.firebase.Timestamp.fromDate(new Date()),
+                        createdAt: window.firebase.Timestamp.fromDate(new Date(`${formData.date}T${new Date().toTimeString().split(' ')[0]}`)),
                         submittedBy: userData.uid
-                    });
-                    setFormData(getInitialState());
-                } catch (error) { console.error("Error submitting report:", error); } 
-                finally { setIsSubmitting(false); setIsConfirming(false); }
-            }, [formData, grandTotal, userData, db, getInitialState]);
+                    };
+                    await window.firebase.addDoc(window.firebase.collection(db, "cashDrops"), submissionData);
+                    setLastSubmittedData({ formData, grandTotal });
+                    setIsPreviewing(true);
+                } catch (error) { 
+                    console.error("Error submitting report:", error); 
+                } finally {
+                    setIsSubmitting(false);
+                }
+            }, [formData, grandTotal, userData, db]);
+
+            const handleClosePreviewAndReset = useCallback(() => {
+                setIsPreviewing(false);
+                setFormData(getInitialState());
+                setLastSubmittedData(null);
+            }, [getInitialState]);
 
             const availableShops = useMemo(() => {
                 if (!userData) return [];
-                return (userData.role === 'Admin' || userData.role === 'Management') 
+                return (userData.role === ROLES.ADMIN || userData.role === ROLES.MANAGEMENT) 
                     ? shops 
                     : shops.filter(s => userData.shopIds?.includes(s.id));
             }, [shops, userData]);
@@ -471,42 +898,100 @@
                 <>
                     <form onSubmit={(e) => { e.preventDefault(); setIsConfirming(true); }} className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                         <div className="lg:col-span-2 bg-slate-800/50 border border-slate-700 p-6 rounded-lg shadow-lg">
-                            <h2 className="text-xl font-semibold text-slate-100 border-b border-slate-700 pb-4 mb-6">New Cash Drop Form</h2>
+                            <h2 className="text-xl font-semibold text-slate-100 border-b border-slate-700 pb-4 mb-6">{t('newFormTitle')}</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormInput label="Date" type="date" name="date" value={formData.date} onChange={handleFormChange} required />
-                                <FormSelect label="Shop" name="shop" value={formData.shop} onChange={handleFormChange} options={availableShops.map(s => ({value: s.name, label: s.name}))} required />
-                                <FormInput label="Staff" name="staff" value={formData.staff} disabled />
-                                <FormSelect label="Shift" name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'AM', label:'AM'}, {value:'PM', label:'PM'}]} />
+                                <FormInput label={t('dateLabel')} type="date" name="date" value={formData.date} onChange={handleFormChange} required />
+                                <FormSelect label={t('shopLabel')} name="shop" value={formData.shop} onChange={handleFormChange} options={availableShops.map(s => ({value: s.name, label: s.name}))} required />
+                                <FormInput label={t('staffLabel')} name="staff" value={formData.staff} disabled />
+                                <FormSelect label={t('shiftLabel')} name="shift" value={formData.shift} onChange={handleFormChange} options={[{value:'AM', label:'AM'}, {value:'PM', label:'PM'}]} />
                             </div>
                             <div className="space-y-4 pt-6 mt-6 border-t border-slate-700">
-                                <CurrencyInputGroup title="By Cash" khrName="cashKhr" usdName="cashUsd" khrValue={formData.cashKhr} usdValue={formData.cashUsd} onChange={handleFormChange} />
-                                <CurrencyInputGroup title="By Bank" khrName="bankKhr" usdName="bankUsd" khrValue={formData.bankKhr} usdValue={formData.bankUsd} onChange={handleFormChange} />
+                                <CurrencyInputGroup title={t('byCashTitle')} khrName="cashKhr" usdName="cashUsd" khrValue={formData.cashKhr} usdValue={formData.cashUsd} onChange={handleFormChange} />
+                                <CurrencyInputGroup title={t('byBankTitle')} khrName="bankKhr" usdName="bankUsd" khrValue={formData.bankKhr} usdValue={formData.bankUsd} onChange={handleFormChange} />
                             </div>
-                            <div className="pt-6 mt-6 border-t border-slate-700"><FormInput label="Note" name="note" value={formData.note} onChange={handleFormChange} placeholder="Add an optional note..."/></div>
+                            <div className="space-y-4 pt-6 mt-6 border-t border-slate-700">
+                                <CurrencyInputGroup title={t('cashExchangeTitle')} khrName="cashExchangeKhr" usdName="cashExchangeUsd" khrValue={formData.cashExchangeKhr} usdValue={formData.cashExchangeUsd} onChange={handleFormChange} />
+                            </div>
+                            <div className="pt-6 mt-6 border-t border-slate-700"><FormInput label={t('noteLabel')} name="note" value={formData.note} onChange={handleFormChange} placeholder={t('notePlaceholder')}/></div>
                         </div>
                         <SummaryCard formData={formData} grandTotal={grandTotal} isSubmitting={isSubmitting} />
                     </form>
                     {isConfirming && <SubmitConfirmationModal onClose={() => setIsConfirming(false)} onConfirm={handleConfirmSubmit} isSubmitting={isSubmitting} />}
+                    {isPreviewing && lastSubmittedData && <SummaryPreviewModal 
+                        isOpen={isPreviewing} 
+                        onClose={handleClosePreviewAndReset} 
+                        formData={lastSubmittedData.formData}
+                        grandTotal={lastSubmittedData.grandTotal}
+                    />}
                 </>
             );
         };
         
-        const SummaryCard = React.memo(({ formData, grandTotal, isSubmitting }) => (
-             <div className="lg:col-span-1 bg-slate-800/50 border border-slate-700 p-6 rounded-lg shadow-lg space-y-4 lg:sticky top-24">
-                <h3 className="text-xl font-semibold text-slate-100 border-b border-slate-700 pb-4">Summary</h3>
-                <div className="space-y-3 text-md pt-2">
-                    <div className="flex justify-between items-center"><span className="text-slate-400">Cash KHR :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashKhr, 'KHR')}</span></div>
-                    <div className="flex justify-between items-center"><span className="text-slate-400">Cash USD :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashUsd, 'USD')}</span></div>
-                    <div className="flex justify-between items-center"><span className="text-slate-400">Bank KHR :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.bankKhr, 'KHR')}</span></div>
-                    <div className="flex justify-between items-center"><span className="text-slate-400">Bank USD :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.bankUsd, 'USD')}</span></div>
+        const SummaryCard = React.memo(({ formData, grandTotal, isSubmitting }) => {
+            const { t } = useTranslation();
+            const [currentTime, setCurrentTime] = useState(new Date());
+
+            useEffect(() => {
+                const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
+                return () => clearInterval(timerId);
+            }, []);
+
+            const formattedDate = useMemo(() => {
+                if (!formData.date) return 'N/A';
+                const [year, month, day] = formData.date.split('-');
+                return `${day}-${month}-${year}`;
+            }, [formData.date]);
+            
+            return (
+                 <div className="lg:col-span-1 bg-slate-800/50 border border-slate-700 p-6 rounded-lg shadow-lg space-y-4 lg:sticky top-24">
+                    <div className="border-b border-slate-700 pb-4">
+                        <h3 className="text-xl font-semibold text-slate-100 text-center">{t('summaryTitle')}</h3>
+                        <div className="text-center text-sm mt-2">
+                             <p className="font-semibold text-slate-300">
+                                <span className="font-sans">{formattedDate}</span>
+                                <span className="mx-2 text-slate-500">|</span>
+                                <span className="font-mono">{currentTime.toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 text-sm pt-2">
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('shopLabel')}:</span><span className="font-semibold text-slate-200">{formData.shop}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('staffLabel')}:</span><span className="font-semibold text-slate-200">{formData.staff}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('shiftLabel')}:</span><span className="font-semibold text-slate-200">{formData.shift}</span></div>
+                    </div>
+
+                    <div className="border-t border-slate-700 !my-4"></div>
+
+                    <div className="space-y-3 text-md">
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashKhrLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashKhr, 'KHR')}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashUsdLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashUsd, 'USD')}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('bankKhrLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.bankKhr, 'KHR')}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('bankUsdLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.bankUsd, 'USD')}</span></div>
+                    </div>
+                    <div className="border-t border-slate-700 !my-4"></div>
+                    <div className="flex justify-between items-center"><span className="font-bold text-slate-100 text-lg">{t('grandTotalLabel')} :</span><span className="font-extrabold text-red-500 text-2xl">{formatCurrency(grandTotal, 'KHR')}</span></div>
+                    <div className="border-t border-slate-700 !my-4"></div>
+                    <div className="space-y-3 text-md">
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashExchangeKhrLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashExchangeKhr, 'KHR')}</span></div>
+                        <div className="flex justify-between items-center"><span className="text-slate-400">{t('cashExchangeUsdLabel')} :</span><span className="font-mono font-semibold text-slate-200">{formatCurrency(formData.cashExchangeUsd, 'USD')}</span></div>
+                    </div>
+                    {formData.note && (
+                        <>
+                            <div className="border-t border-slate-700 !my-4"></div>
+                            <div>
+                                <h4 className="font-semibold text-slate-300 mb-1">{t('noteLabel')}:</h4>
+                                <p className="text-sm text-slate-400 bg-slate-900/50 p-3 rounded-md whitespace-pre-wrap">{formData.note}</p>
+                            </div>
+                        </>
+                    )}
+                    
+                    <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center !mt-6 disabled:opacity-50 transition-all shadow-lg hover:shadow-blue-500/50">
+                        {isSubmitting ? <Icon name="loader" /> : t('submitReportButton')}
+                    </button>
                 </div>
-                <div className="border-t border-slate-700 !my-4"></div>
-                <div className="flex justify-between items-center"><span className="font-bold text-slate-100 text-lg">Grand Total :</span><span className="font-extrabold text-red-500 text-2xl">{formatCurrency(grandTotal, 'KHR')}</span></div>
-                <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center !mt-6 disabled:opacity-50 transition-all shadow-lg hover:shadow-blue-500/50">
-                    {isSubmitting ? <Icon name="loader" /> : 'Submit Report'}
-                </button>
-            </div>
-        ));
+            );
+        });
         
         /******************************************************************************
          * REPORTS DASHBOARD & COMPONENTS
@@ -514,6 +999,7 @@
         const ReportsDashboard = () => {
             const { reports, shops, appSettings } = useAppContext();
             const { db, userData } = useAuth();
+            const { t } = useTranslation();
             const [filters, setFilters] = useState({ shop: '', dueTime: 'Today', startDate: '', endDate: '' });
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [modalState, setModalState] = useState({ edit: null, delete: null, note: null, customDate: false });
@@ -523,20 +1009,13 @@
 
             const availableShops = useMemo(() => {
                 if (!userData) return [];
-                return (userData.role === 'Admin' || userData.role === 'Management') 
+                return (userData.role === ROLES.ADMIN || userData.role === ROLES.MANAGEMENT) 
                     ? shops 
                     : shops.filter(s => userData.shopIds?.includes(s.id));
             }, [shops, userData]);
-
-            const shopColorMap = useMemo(() => {
-                const colors = ['blue', 'green', 'yellow', 'pink', 'indigo', 'teal'];
-                return shops.reduce((map, shop, index) => {
-                    const color = colors[index % colors.length];
-                    map[shop.name] = { base: `bg-${color}-900/20`, hover: `hover:bg-${color}-800/30` };
-                    return map;
-                }, {});
-            }, [shops]);
             
+            const { filteredAndAggregatedData, totals } = useFilteredReports(reports, filters, userData, availableShops);
+
             const handleConfirmDelete = useCallback(async () => {
                 if (!modalState.delete) return;
                 setIsSubmitting(true);
@@ -559,6 +1038,8 @@
                         createdAt: window.firebase.Timestamp.fromDate(new Date(editedData.date)),
                         cashUsd: clean(editedData.cashUsd), cashKhr: clean(editedData.cashKhr),
                         bankUsd: clean(editedData.bankUsd), bankKhr: clean(editedData.bankKhr),
+                        cashExchangeKhr: clean(editedData.cashExchangeKhr),
+                        cashExchangeUsd: clean(editedData.cashExchangeUsd),
                         grandTotalKhr: grandTotal,
                     });
                     handleModalClose('edit');
@@ -566,112 +1047,33 @@
                 finally { setIsSubmitting(false); }
             }, [modalState.edit, db, appSettings.exchangeRate, handleModalClose]);
 
-            const filteredAndAggregatedData = useMemo(() => {
-                if (!reports || !userData) return null;
-                
-                const userFilteredReports = (userData.role !== 'Admin' && userData.role !== 'Management')
-                    ? reports.filter(report => availableShops.map(s => s.name).includes(report.shop))
-                    : reports;
-                
-                let filtered = userFilteredReports;
-                const { dueTime, startDate, endDate, shop } = filters;
-                const now = new Date();
-
-                if (dueTime === 'Today') {
-                    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-                    startOfToday.setHours(0, 0, 0, 0);
-                    filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= startOfToday);
-                } else if (dueTime === 'Yesterday') {
-                    const startOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-                    startOfYesterday.setHours(0, 0, 0, 0);
-                    const endOfYesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-                    endOfYesterday.setHours(23, 59, 59, 999);
-                    filtered = userFilteredReports.filter(r => {
-                        const reportDate = r.createdAt?.toDate();
-                        return reportDate >= startOfYesterday && reportDate <= endOfYesterday;
-                    });
-                } else if (dueTime === 'This Month') {
-                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-                    filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= startOfMonth);
-                } else if (dueTime === 'Last Month') {
-                    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-                    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0);
-                    endOfLastMonth.setHours(23, 59, 59, 999);
-                    filtered = userFilteredReports.filter(r => {
-                        const reportDate = r.createdAt?.toDate();
-                        return reportDate >= startOfLastMonth && reportDate <= endOfLastMonth;
-                    });
-                } else if (dueTime === 'This Year') {
-                    const startOfYear = new Date(now.getFullYear(), 0, 1);
-                    filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= startOfYear);
-                } else if (dueTime === 'Last Year') {
-                    const startOfLastYear = new Date(now.getFullYear() - 1, 0, 1);
-                    const endOfLastYear = new Date(now.getFullYear() - 1, 11, 31);
-                    endOfLastYear.setHours(23, 59, 59, 999);
-                    filtered = userFilteredReports.filter(r => {
-                        const reportDate = r.createdAt?.toDate();
-                        return reportDate >= startOfLastYear && reportDate <= endOfLastYear;
-                    });
-                } else if (dueTime === 'Custom' && startDate && endDate) {
-                    const start = new Date(startDate);
-                    const end = new Date(endDate);
-                    end.setHours(23, 59, 59, 999);
-                    filtered = userFilteredReports.filter(r => r.createdAt?.toDate() >= start && r.createdAt?.toDate() <= end);
-                }
-                
-                if (shop) filtered = filtered.filter(r => r.shop === shop);
-                
-                if (['Today', 'Yesterday', 'Custom'].includes(dueTime)) return { type: 'detailed', data: filtered };
-                
-                const aggregated = filtered.reduce((acc, report) => {
-                    const date = report.createdAt.toDate();
-                    const period = ['This Month', 'Last Month'].includes(dueTime)
-                        ? date.toLocaleString('default', { month: 'short', year: 'numeric' })
-                        : date.getFullYear().toString();
-                    const key = `${period}|${report.shop}`;
-                    if (!acc[key]) acc[key] = { period, shop: report.shop, cashUsd: 0, cashKhr: 0, bankUsd: 0, bankKhr: 0, grandTotalKhr: 0 };
-                    acc[key].cashUsd += report.cashUsd || 0; acc[key].cashKhr += report.cashKhr || 0;
-                    acc[key].bankUsd += report.bankUsd || 0; acc[key].bankKhr += report.bankKhr || 0;
-                    acc[key].grandTotalKhr += report.grandTotalKhr || 0;
-                    return acc;
-                }, {});
-                return { type: 'aggregated', data: Object.values(aggregated) };
-            }, [reports, filters, userData, availableShops]);
-
-            const totals = useMemo(() => {
-                if (!filteredAndAggregatedData?.data) return { cashUsd: 0, cashKhr: 0, bankUsd: 0, bankKhr: 0, netSale: 0 };
-                return filteredAndAggregatedData.data.reduce((acc, r) => { 
-                    acc.cashUsd += r.cashUsd || 0; acc.cashKhr += r.cashKhr || 0; 
-                    acc.bankUsd += r.bankUsd || 0; acc.bankKhr += r.bankKhr || 0; 
-                    acc.netSale += r.grandTotalKhr || 0; 
-                    return acc; 
-                }, { cashUsd: 0, cashKhr: 0, bankUsd: 0, bankKhr: 0, netSale: 0 })
-            }, [filteredAndAggregatedData]);
-            
             const handleExport = useCallback(() => {
                 if (!filteredAndAggregatedData?.data) return;
                 const dataToExport = filteredAndAggregatedData.data.map(row => 
                     (filteredAndAggregatedData.type === 'detailed') ? {
-                        'Date': formatDateDDMMYY(row.createdAt), 'Shop': row.shop, 'Staff': row.staff,
-                        'Net Sale (KHR)': row.grandTotalKhr, 'Cash USD': row.cashUsd, 'Cash KHR': row.cashKhr,
-                        'Bank USD': row.bankUsd, 'Bank KHR': row.bankKhr, 'Shift': row.shift
+                        [t('dateHeader')]: formatDateDDMMYYYY(row.createdAt), [t('shopHeader')]: row.shop, [t('staffHeader')]: row.staff,
+                        [t('netSaleHeader')]: row.grandTotalKhr, [t('cashUsdHeader')]: row.cashUsd, [t('cashKhrHeader')]: row.cashKhr,
+                        [t('bankUsdHeader')]: row.bankUsd, [t('bankKhrHeader')]: row.bankKhr, 
+                        [t('cashExchUsdHeader')]: row.cashExchangeUsd, [t('cashExchKhrHeader')]: row.cashExchangeKhr,
+                        [t('shiftHeader')]: row.shift
                     } : {
-                        [filters.dueTime]: row.period, 'Shop': row.shop, 'Net Sale (KHR)': row.grandTotalKhr,
-                        'Cash USD': row.cashUsd, 'Cash KHR': row.cashKhr, 'Bank USD': row.bankUsd, 'Bank KHR': row.bankKhr
+                        [filters.dueTime]: row.period, [t('shopHeader')]: row.shop, [t('netSaleHeader')]: row.grandTotalKhr,
+                        [t('cashUsdHeader')]: row.cashUsd, [t('cashKhrHeader')]: row.cashKhr, [t('bankUsdHeader')]: row.bankUsd, [t('bankKhrHeader')]: row.bankKhr,
+                        [t('cashExchUsdHeader')]: row.cashExchangeUsd, [t('cashExchKhrHeader')]: row.cashExchangeKhr
                     }
                 );
                 const worksheet = XLSX.utils.json_to_sheet(dataToExport);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, "Cash Drop Report");
                 XLSX.writeFile(workbook, `Cash_Drop_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
-            }, [filteredAndAggregatedData, filters.dueTime]);
+            }, [filteredAndAggregatedData, filters.dueTime, t]);
 
             return (
                 <div className="bg-slate-800/50 border border-slate-700 p-4 sm:p-6 rounded-lg shadow-lg mt-8">
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
-                        <h2 className="text-xl font-semibold text-slate-100">Daily Cash Drop History</h2>
+                        <h2 className="text-xl font-semibold text-slate-100">{t('historyTitle')}</h2>
                         <button onClick={handleExport} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 text-sm w-full sm:w-auto justify-center">
-                            <Icon name="export" /> Export to Excel
+                            <Icon name="export" /> {t('exportButton')}
                         </button>
                     </div>
                     
@@ -679,81 +1081,107 @@
                     
                     {!filteredAndAggregatedData ? <div className="py-16 flex justify-center items-center"><Icon name="loader" className="w-8 h-8 text-slate-400" /></div> :
                         (filteredAndAggregatedData.type === 'detailed') ? 
-                            <ReportTable reports={filteredAndAggregatedData.data} totals={totals} onEdit={(r) => handleModalOpen('edit', r)} onDelete={(r) => handleModalOpen('delete', r)} onViewNote={(n) => handleModalOpen('note', n)} viewType={filters.dueTime} shopColorMap={shopColorMap} /> : 
-                            <AggregatedReportTable reports={filteredAndAggregatedData.data} totals={totals} periodType={filters.dueTime} shopColorMap={shopColorMap} />
+                            <ReportTable reports={filteredAndAggregatedData.data} totals={totals} onEdit={(r) => handleModalOpen('edit', r)} onDelete={(r) => handleModalOpen('delete', r)} onViewNote={(n) => handleModalOpen('note', n)} viewType={filters.dueTime} /> : 
+                            <AggregatedReportTable reports={filteredAndAggregatedData.data} totals={totals} periodType={filters.dueTime} />
                     }
                     
                     <EditReportModal isOpen={!!modalState.edit} onClose={() => handleModalClose('edit')} onSave={handleSaveEdit} report={modalState.edit} isSubmitting={isSubmitting} shops={availableShops}/>
                     <DeleteConfirmationModal isOpen={!!modalState.delete} onClose={() => handleModalClose('delete')} onConfirm={handleConfirmDelete} isSubmitting={isSubmitting}/>
-                    <CustomDateRangeModal isOpen={modalState.customDate} onClose={() => handleModalClose('customDate')} onApply={(dates) => setFilters(prev => ({...prev, ...dates}))}/>
+                    <CustomDateRangeModal isOpen={modalState.customDate} onClose={() => handleModalClose('customDate')} onApply={(dates) => setFilters(prev => ({...prev, ...dates, dueTime: 'Custom'}))}/>
                     <NoteViewModal isOpen={!!modalState.note} onClose={() => handleModalClose('note')} note={modalState.note}/>
                 </div>
             );
         };
         
         const ReportFilters = React.memo(({ filters, setFilters, shops, onCustomClick }) => {
+            const { t } = useTranslation();
+            const timeFilterOptions = useMemo(() => [
+                { value: 'Today', label: t('timeFilters.today') },
+                { value: 'Yesterday', label: t('timeFilters.yesterday') },
+                { value: 'This Month', label: t('timeFilters.thisMonth') },
+                { value: 'Last Month', label: t('timeFilters.lastMonth') },
+                { value: 'This Year', label: t('timeFilters.thisYear') },
+                { value: 'Last Year', label: t('timeFilters.lastYear') },
+                { value: 'Custom', label: t('timeFilters.custom') }
+            ], [t]);
+            
             const handleFilterChange = (e) => {
                 const { name, value } = e.target;
-                if (name === 'dueTime' && value === 'Custom') onCustomClick();
-                setFilters(prev => ({...prev, [name]: value, startDate: '', endDate: ''}));
+                if (name === 'dueTime' && value === 'Custom') {
+                    onCustomClick();
+                } else {
+                    setFilters(prev => ({...prev, [name]: value, startDate: '', endDate: ''}));
+                }
             };
             return (
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 bg-slate-900/50 rounded-lg items-center">
-                    <FormSelect label="Shop" name="shop" value={filters.shop} onChange={handleFilterChange} options={[{value:'',label:'All Shops'}, ...shops.map(s=>({value:s.name, label:s.name}))]} />
-                    <FormSelect label="Due Time" name="dueTime" value={filters.dueTime} onChange={handleFilterChange} options={[
-                        {value:'Today',label:'Today'},
-                        {value:'Yesterday',label:'Yesterday'},
-                        {value:'This Month',label:'This Month'}, 
-                        {value:'Last Month',label:'Last Month'}, 
-                        {value:'This Year',label:'This Year'},
-                        {value:'Last Year',label:'Last Year'},
-                        {value:'Custom', label:'Custom'}
-                    ]} />
+                    <FormSelect label={t('shopLabel')} name="shop" value={filters.shop} onChange={handleFilterChange} options={[{value:'',label: t('allShops')}, ...shops.map(s=>({value:s.name, label:s.name}))]} />
+                    <FormSelect label={t('dueTimeLabel')} name="dueTime" value={filters.dueTime} onChange={handleFilterChange} options={timeFilterOptions} />
                 </div>
             );
         });
         
-        const ReportTable = React.memo(({ reports, totals, onEdit, onDelete, onViewNote, viewType, shopColorMap }) => {
+        const ReportTable = React.memo(({ reports, totals, onEdit, onDelete, onViewNote, viewType }) => {
             const { userData } = useAuth();
-            const canModify = userData?.role === 'Admin' || userData?.role === 'Management' || userData?.role === 'Shop Manager';
+            const { shops } = useAppContext();
+            const { t } = useTranslation();
+            const canModify = [ROLES.ADMIN, ROLES.MANAGEMENT, ROLES.SHOP_MANAGER].includes(userData?.role);
+            const hasShiftColumn = ['Today', 'Yesterday'].includes(viewType);
+            const colSpan = 3 + (hasShiftColumn ? 1 : 0);
+
+             const shopColorMap = useMemo(() => {
+                const colors = ['blue', 'green', 'yellow', 'pink', 'indigo', 'teal'];
+                return shops.reduce((map, shop, index) => {
+                    const color = colors[index % colors.length];
+                    map[shop.name] = { base: `bg-${color}-900/20`, hover: `hover:bg-${color}-800/30` };
+                    return map;
+                }, {});
+            }, [shops]);
+
             return (
                 <div className="overflow-x-auto">
-                    {reports.length === 0 ? <div className="text-center py-16 text-slate-500"><p>No reports found for the selected filters.</p></div> :
+                    {reports.length === 0 ? <div className="text-center py-16 text-slate-500"><p>{t('noReportsFound')}</p></div> :
                         <table className="w-full text-sm text-left">
                             <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
                                 <tr>
-                                    <th className="p-3">{viewType === 'Custom' ? 'Date' : 'Date & Time'}</th><th className="p-3">Shop</th>
-                                    {viewType !== 'Custom' && <th className="p-3">Staff</th>}
-                                    {['Today', 'Yesterday'].includes(viewType) && <th className="p-3">Shift</th>}
-                                    <th className="p-3 text-right">Net Sale (៛)</th><th className="p-3 text-right">Cash USD</th><th className="p-3 text-right">Cash KHR</th>
-                                    <th className="p-3 text-right">Bank USD</th><th className="p-3 text-right">Bank KHR</th>
-                                    {viewType !== 'Custom' && <th className="p-3 text-center">Actions</th>}
+                                    <th className="p-3">{viewType === 'Custom' ? t('dateHeader') : t('dateTimeHeader')}</th><th className="p-3">{t('shopHeader')}</th>
+                                    <th className="p-3">{t('staffHeader')}</th>
+                                    {hasShiftColumn && <th className="p-3">{t('shiftHeader')}</th>}
+                                    <th className="p-3 text-right">{t('netSaleHeader')}</th><th className="p-3 text-right">{t('cashUsdHeader')}</th><th className="p-3 text-right">{t('cashKhrHeader')}</th>
+                                    <th className="p-3 text-right">{t('bankUsdHeader')}</th><th className="p-3 text-right">{t('bankKhrHeader')}</th>
+                                    <th className="p-3 text-right">{t('cashExchUsdHeader')}</th>
+                                    <th className="p-3 text-right">{t('cashExchKhrHeader')}</th>
+                                    <th className="p-3 text-center">{t('actionsHeader')}</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-700">
                                 {reports.map(r => (
                                     <tr key={r.id} className={`${shopColorMap[r.shop]?.base || 'bg-transparent'} ${shopColorMap[r.shop]?.hover || 'hover:bg-slate-700/50'}`}>
-                                        <td className="p-3 whitespace-nowrap text-slate-400">{viewType === 'Custom' ? formatDateDDMMYY(r.createdAt) : r.createdAt?.toDate().toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh' })}</td>
+                                        <td className="p-3 whitespace-nowrap text-slate-400 font-mono">{viewType === 'Custom' ? formatDateDDMMYYYY(r.createdAt) : formatFullDateTime(r.createdAt)}</td>
                                         <td className="p-3 text-slate-300">{r.shop}</td>
-                                        {viewType !== 'Custom' && <td className="p-3 text-slate-300">{r.staff}</td>}
-                                        {['Today', 'Yesterday'].includes(viewType) && <td className="p-3 text-slate-300">{r.shift}</td>}
+                                        <td className="p-3 text-slate-300">{r.staff}</td>
+                                        {hasShiftColumn && <td className="p-3 text-slate-300">{r.shift}</td>}
                                         <td className="p-3 text-right font-bold text-blue-400">{formatCurrency(r.grandTotalKhr, 'KHR')}</td>
                                         <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashKhr, 'KHR')}</td>
                                         <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.bankKhr, 'KHR')}</td>
-                                        {viewType !== 'Custom' && <td className="p-3 flex gap-2 justify-center">
+                                        <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashExchangeUsd, 'USD')}</td>
+                                        <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashExchangeKhr, 'KHR')}</td>
+                                        <td className="p-3 flex gap-2 justify-center">
                                             {r.note && <button onClick={() => onViewNote(r.note)} className="p-1 text-yellow-400 hover:text-yellow-300"><Icon name="document-text"/></button>}
-                                            <button onClick={() => canModify && onEdit(r)} disabled={!canModify} className="p-1 text-blue-400 hover:text-blue-300 disabled:text-slate-600 disabled:cursor-not-allowed"><Icon name="note"/></button>
-                                            <button onClick={() => canModify && onDelete(r)} disabled={!canModify} className="p-1 text-red-500 hover:text-red-400 disabled:text-slate-600 disabled:cursor-not-allowed"><Icon name="trash"/></button>
-                                        </td>}
+                                            <button onClick={() => onEdit(r)} disabled={!canModify} className="p-1 text-blue-400 hover:text-blue-300 disabled:text-slate-600 disabled:cursor-not-allowed"><Icon name="note"/></button>
+                                            <button onClick={() => onDelete(r)} disabled={!canModify} className="p-1 text-red-500 hover:text-red-400 disabled:text-slate-600 disabled:cursor-not-allowed"><Icon name="trash"/></button>
+                                        </td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot className="bg-slate-800 font-bold"><tr>
-                                <td colSpan={viewType === 'Custom' ? 2 : 4} className="p-3 text-right text-slate-300">Sub-Total</td>
+                                <td colSpan={colSpan} className="p-3 text-right text-slate-300">{t('subTotal')}</td>
                                 <td className="p-3 text-right font-mono text-blue-400">{formatCurrency(totals.netSale, 'KHR')}</td>
                                 <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashKhr, 'KHR')}</td>
                                 <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankKhr, 'KHR')}</td>
-                                {viewType !== 'Custom' && <td />}
+                                <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashExchangeUsd, 'USD')}</td>
+                                <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashExchangeKhr, 'KHR')}</td>
+                                <td />
                             </tr></tfoot>
                         </table>
                     }
@@ -761,46 +1189,66 @@
             )
         });
 
-        const AggregatedReportTable = React.memo(({ reports, totals, periodType, shopColorMap }) => (
-            <div className="overflow-x-auto">
-                {reports.length === 0 ? <div className="text-center py-16 text-slate-500"><p>No reports found for the selected filters.</p></div> :
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
-                            <tr>
-                                <th className="p-3">{periodType}</th><th className="p-3">Shop</th><th className="p-3 text-right">Net Sale (៛)</th>
-                                <th className="p-3 text-right">Cash USD</th><th className="p-3 text-right">Cash KHR</th>
-                                <th className="p-3 text-right">Bank USD</th><th className="p-3 text-right">Bank KHR</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-700">
-                            {reports.map(r => (
-                                <tr key={`${r.period}-${r.shop}`} className={`${shopColorMap[r.shop]?.base || 'bg-transparent'} ${shopColorMap[r.shop]?.hover || 'hover:bg-slate-700/50'}`}>
-                                    <td className="p-3 whitespace-nowrap text-slate-400">{r.period}</td>
-                                    <td className="p-3 text-slate-300">{r.shop}</td>
-                                    <td className="p-3 text-right font-bold text-blue-400">{formatCurrency(r.grandTotalKhr, 'KHR')}</td>
+        const AggregatedReportTable = React.memo(({ reports, totals, periodType }) => {
+            const { shops } = useAppContext();
+            const { t } = useTranslation();
+            const shopColorMap = useMemo(() => {
+                const colors = ['blue', 'green', 'yellow', 'pink', 'indigo', 'teal'];
+                return shops.reduce((map, shop, index) => {
+                    const color = colors[index % colors.length];
+                    map[shop.name] = { base: `bg-${color}-900/20`, hover: `hover:bg-${color}-800/30` };
+                    return map;
+                }, {});
+            }, [shops]);
+
+            return (
+                <div className="overflow-x-auto">
+                    {reports.length === 0 ? <div className="text-center py-16 text-slate-500"><p>{t('noReportsFound')}</p></div> :
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-900/50 text-xs text-slate-400 uppercase">
+                                <tr>
+                                    <th className="p-3">{periodType}</th><th className="p-3">{t('shopHeader')}</th><th className="p-3 text-right">{t('netSaleHeader')}</th>
+                                    <th className="p-3 text-right">{t('cashUsdHeader')}</th><th className="p-3 text-right">{t('cashKhrHeader')}</th>
+                                    <th className="p-3 text-right">{t('bankUsdHeader')}</th><th className="p-3 text-right">{t('bankKhrHeader')}</th>
+                                    <th className="p-3 text-right">{t('cashExchUsdHeader')}</th>
+                                    <th className="p-3 text-right">{t('cashExchKhrHeader')}</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-700">
+                                {reports.map(r => (
+                                    <tr key={`${r.period}-${r.shop}`} className={`${shopColorMap[r.shop]?.base || 'bg-transparent'} ${shopColorMap[r.shop]?.hover || 'hover:bg-slate-700/50'}`}>
+                                        <td className="p-3 whitespace-nowrap text-slate-400">{r.period}</td>
+                                        <td className="p-3 text-slate-300">{r.shop}</td>
+                                        <td className="p-3 text-right font-bold text-blue-400">{formatCurrency(r.grandTotalKhr, 'KHR')}</td>
                                     <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashKhr, 'KHR')}</td>
                                     <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.bankKhr, 'KHR')}</td>
+                                    <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashExchangeUsd, 'USD')}</td>
+                                    <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(r.cashExchangeKhr, 'KHR')}</td>
                                 </tr>
                             ))}
-                        </tbody>
-                        <tfoot className="bg-slate-800 font-bold">
-                            <tr>
-                                <td colSpan={2} className="p-3 text-right text-slate-300">Sub-Total</td>
-                                <td className="p-3 text-right font-mono text-blue-400">{formatCurrency(totals.netSale, 'KHR')}</td>
-                                <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashKhr, 'KHR')}</td>
-                                <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankKhr, 'KHR')}</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                }
-            </div>
-        ));
+                            </tbody>
+                            <tfoot className="bg-slate-800 font-bold">
+                                <tr>
+                                    <td colSpan={2} className="p-3 text-right text-slate-300">{t('subTotal')}</td>
+                                    <td className="p-3 text-right font-mono text-blue-400">{formatCurrency(totals.netSale, 'KHR')}</td>
+                                    <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashKhr, 'KHR')}</td>
+                                    <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankUsd, 'USD')}</td><td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.bankKhr, 'KHR')}</td>
+                                    <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashExchangeUsd, 'USD')}</td>
+                                    <td className="p-3 text-right font-mono text-slate-300">{formatCurrency(totals.cashExchangeKhr, 'KHR')}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    }
+                </div>
+            );
+        });
         
         /******************************************************************************
          * MAIN APP & ROOT COMPONENT
          *****************************************************************************/
         const AppHeader = () => {
             const { userData, logout } = useAuth();
+            const { t, locale, setLocale } = useTranslation();
             const [installPrompt, setInstallPrompt] = useState(null);
 
             useEffect(() => {
@@ -818,12 +1266,16 @@
             return (
                 <header className="bg-slate-800/50 border border-slate-700 p-4 rounded-lg shadow-lg mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div className="text-center sm:text-left">
-                        <h1 className="text-2xl font-semibold text-slate-100">Cash Drop Report</h1>
-                        <p className="mt-1 text-sm text-slate-400">Welcome, {userData.name} ({userData.role})</p>
+                        <h1 className="text-2xl font-semibold text-slate-100">{t('headerTitle')}</h1>
+                        <p className="mt-1 text-sm text-slate-400">{t('welcomeMessage', { name: userData.name, role: userData.role })}</p>
                     </div>
                     <div className="flex items-center gap-2 w-full sm:w-auto">
-                        {installPrompt && <button onClick={handleInstallClick} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 text-sm grow justify-center"><Icon name="install" /> Install App</button>}
-                        <button onClick={logout} className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 text-sm grow justify-center"><Icon name="logout" /> Logout</button>
+                        <div className="flex items-center gap-1 bg-slate-700/50 p-1 rounded-lg">
+                            <button onClick={() => setLocale('en')} className={`px-3 py-1 text-sm rounded-md ${locale === 'en' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}>EN</button>
+                            <button onClick={() => setLocale('km')} className={`px-3 py-1 text-sm rounded-md ${locale === 'km' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-600'}`}>ខ្មែរ</button>
+                        </div>
+                        {installPrompt && <button onClick={handleInstallClick} className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 text-sm grow justify-center"><Icon name="install" /> {t('installAppButton')}</button>}
+                        <button onClick={logout} className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg flex items-center gap-2 text-sm grow justify-center"><Icon name="logout" /> {t('logoutButton')}</button>
                     </div>
                 </header>
             );
@@ -833,10 +1285,13 @@
             const { userData } = useAuth();
             const { isLoading } = useAppContext();
             if (isLoading || !userData) return <LoadingSpinner />;
+
+            const canViewDashboard = userData?.role !== ROLES.CASHIER && userData?.role !== ROLES.STAFF;
+            
             return (
                 <div className="space-y-8">
                     <NewCashDropForm />
-                    {userData?.role !== 'Cashier' && userData?.role !== 'Staff' && <ReportsDashboard />}
+                    {canViewDashboard && <ReportsDashboard />}
                 </div>
             );
         };
@@ -844,21 +1299,31 @@
         const App = () => {
             const { user, loading } = useAuth();
             if (loading) return <LoadingSpinner />;
-            if (!user) return <LoginPage />;
-            return (
+            return !user ? <LoginPage /> : (
                 <AppProvider>
-                    <div className="container mx-auto p-4 md:p-8"><div className="max-w-7xl mx-auto"><AppHeader /><main><CashDropPage /></main></div></div>
+                    <div className="container mx-auto p-4 md:p-8">
+                        <div className="max-w-7xl mx-auto">
+                            <AppHeader />
+                            <main>
+                                <CashDropPage />
+                            </main>
+                        </div>
+                    </div>
                 </AppProvider>
             );
         };
 
-        const Root = () => (<AuthProvider><App /></AuthProvider>);
+        const Root = () => (
+            <LanguageProvider>
+                <AuthProvider>
+                    <App />
+                </AuthProvider>
+            </LanguageProvider>
+        );
 
         ReactDOM.createRoot(document.getElementById('root')).render(<Root />);
     </script>
 </body>
 </html>
-
-
 
 
